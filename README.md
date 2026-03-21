@@ -4,7 +4,7 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-79%25-brightgreen)](https://github.com/quantsingularity/BlockGuardian/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 🔒 Blockchain Security & Monitoring Platform
+## Blockchain Security & Monitoring Platform
 
 BlockGuardian is a comprehensive blockchain security and monitoring platform that helps organizations protect their blockchain assets, detect vulnerabilities, and ensure compliance with regulatory requirements.
 
