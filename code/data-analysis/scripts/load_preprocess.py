@@ -3,13 +3,14 @@ import pandas as pd
 from datetime import timedelta
 import os
 import logging
-from core.logging import get_logger
+import logging
 
-logger = get_logger(__name__)
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 RESOURCES_DIR = os.path.join(BASE_DIR, "resources", "datasets")
 TRANSACTION_FILE = os.path.join(RESOURCES_DIR, "transaction_history.csv")
