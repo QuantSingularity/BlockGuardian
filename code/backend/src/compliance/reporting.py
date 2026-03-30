@@ -134,7 +134,7 @@ class ComplianceReport(Base, AuditMixin, TimestampMixin):
                 .filter(
                     FraudDetection.created_at >= self.start_date,
                     FraudDetection.created_at <= self.end_date,
-                    FraudDetection.is_fraud == True,
+                    FraudDetection.is_fraud,
                 )
                 .all()
             )

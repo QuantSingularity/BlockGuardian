@@ -38,7 +38,7 @@ def get_portfolios() -> Any:
             query = (
                 session.query(Portfolio)
                 .filter(
-                    Portfolio.owner_id == g.current_user_id, Portfolio.is_active == True
+                    Portfolio.owner_id == g.current_user_id, Portfolio.is_active
                 )
                 .order_by(Portfolio.created_at.desc())
             )
@@ -139,7 +139,7 @@ def get_portfolio(portfolio_id: Any) -> Any:
                 .filter(
                     Portfolio.id == portfolio_id,
                     Portfolio.owner_id == g.current_user_id,
-                    Portfolio.is_active == True,
+                    Portfolio.is_active,
                 )
                 .first()
             )
@@ -176,7 +176,7 @@ def update_portfolio(portfolio_id: Any) -> None:
                 .filter(
                     Portfolio.id == portfolio_id,
                     Portfolio.owner_id == g.current_user_id,
-                    Portfolio.is_active == True,
+                    Portfolio.is_active,
                 )
                 .first()
             )
@@ -296,7 +296,7 @@ def buy_asset(portfolio_id: Any) -> None:
                 .filter(
                     Portfolio.id == portfolio_id,
                     Portfolio.owner_id == g.current_user_id,
-                    Portfolio.is_active == True,
+                    Portfolio.is_active,
                 )
                 .first()
             )
@@ -351,7 +351,7 @@ def buy_asset(portfolio_id: Any) -> None:
                 .filter(
                     PortfolioHolding.portfolio_id == portfolio.id,
                     PortfolioHolding.asset_id == asset.id,
-                    PortfolioHolding.is_active == True,
+                    PortfolioHolding.is_active,
                 )
                 .first()
             )
@@ -423,7 +423,7 @@ def sell_asset(portfolio_id: Any) -> None:
                 .filter(
                     Portfolio.id == portfolio_id,
                     Portfolio.owner_id == g.current_user_id,
-                    Portfolio.is_active == True,
+                    Portfolio.is_active,
                 )
                 .first()
             )
@@ -445,7 +445,7 @@ def sell_asset(portfolio_id: Any) -> None:
                 .filter(
                     PortfolioHolding.portfolio_id == portfolio.id,
                     PortfolioHolding.asset_id == asset.id,
-                    PortfolioHolding.is_active == True,
+                    PortfolioHolding.is_active,
                 )
                 .first()
             )
@@ -590,7 +590,7 @@ def search_assets() -> None:
         session = db_manager.get_session()
         try:
             search_query = session.query(Asset).filter(
-                Asset.is_active == True, Asset.is_tradeable == True
+                Asset.is_active, Asset.is_tradeable
             )
             search_query = search_query.filter(
                 Asset.symbol.ilike(f"%{query}%") | Asset.name.ilike(f"%{query}%")

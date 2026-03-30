@@ -172,14 +172,14 @@ def get_user_stats() -> Any:
             # Get portfolio count
             portfolio_count = (
                 session.query(Portfolio)
-                .filter(Portfolio.owner_id == user.id, Portfolio.is_active == True)
+                .filter(Portfolio.owner_id == user.id, Portfolio.is_active)
                 .count()
             )
 
             # Get total portfolio value
             portfolios = (
                 session.query(Portfolio)
-                .filter(Portfolio.owner_id == user.id, Portfolio.is_active == True)
+                .filter(Portfolio.owner_id == user.id, Portfolio.is_active)
                 .all()
             )
 

@@ -223,7 +223,7 @@ class TestComplianceManager(TestCase):
             self.compliance_manager, "_calculate_kyc_risk_score"
         ) as mock_calc_risk, patch.object(
             self.compliance_manager, "_update_user_kyc_status"
-        ) as mock_update_status:
+        ):
             mock_verify_docs.return_value = {
                 "success": False,
                 "verified_documents": [],
@@ -299,7 +299,7 @@ class TestComplianceManager(TestCase):
             self.compliance_manager, "_calculate_kyc_risk_score"
         ) as mock_calc_risk, patch.object(
             self.compliance_manager, "_update_user_kyc_status"
-        ) as mock_update_status:
+        ):
             mock_verify_docs.return_value = {
                 "success": False,
                 "verified_documents": [],
