@@ -1,7 +1,6 @@
-import React from "react";
-import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
-import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
+import { styled } from "nativewind";
+import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
 
 const StyledTouchableOpacity = styled(TouchableOpacity);
 const StyledText = styled(Text);

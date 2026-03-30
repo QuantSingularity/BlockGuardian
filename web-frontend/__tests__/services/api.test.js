@@ -15,7 +15,7 @@ jest.mock("axios", () => {
 });
 
 import axios from "axios";
-import { authAPI, portfolioAPI, healthAPI } from "../../services/api";
+import { authAPI, healthAPI, portfolioAPI } from "../../services/api";
 
 describe("API Service", () => {
   beforeEach(() => {

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 
 /**
  * Custom hook for persisting state to AsyncStorage

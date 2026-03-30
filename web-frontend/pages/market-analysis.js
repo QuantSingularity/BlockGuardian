@@ -1,19 +1,18 @@
-import Layout from "../components/Layout";
-import { useState } from "react";
 import {
-  LineChart,
-  Line,
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import Layout from "../components/Layout";
 
 export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
   // Mock data for market indices

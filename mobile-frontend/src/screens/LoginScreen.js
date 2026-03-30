@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import { Ionicons } from "@expo/vector-icons"; // Import icons
+import { styled } from "nativewind";
+import { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { styled } from "nativewind";
-import { Ionicons } from "@expo/vector-icons"; // Import icons
 
 const StyledView = styled(View);
 const StyledText = styled(Text);

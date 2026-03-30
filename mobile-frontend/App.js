@@ -1,8 +1,7 @@
 import "react-native-get-random-values";
 import "@walletconnect/react-native-compat";
-import React from "react";
-import AppNavigator from "./src/navigation/AppNavigator";
 import { WalletConnectModal } from "@walletconnect/modal-react-native";
+import AppNavigator from "./src/navigation/AppNavigator";
 
 // --- WalletConnect Configuration ---
 // Get project ID from environment variables or use demo ID

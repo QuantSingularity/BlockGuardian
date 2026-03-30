@@ -14,7 +14,7 @@ const API_BASE_URL =
  */
 const handleResponse = async (response) => {
   const contentType = response.headers.get("content-type");
-  const isJson = contentType && contentType.includes("application/json");
+  const isJson = contentType?.includes("application/json");
 
   // Parse response based on content type
   const data = isJson ? await response.json() : await response.text();
@@ -54,7 +54,7 @@ const createRequestOptions = (method, data, token) => {
 
   // Add authorization header if token is provided
   if (token) {
-    options.headers["Authorization"] = `Bearer ${token}`;
+    options.headers.Authorization = `Bearer ${token}`;
   }
 
   // Add request body for non-GET requests

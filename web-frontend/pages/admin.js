@@ -1,22 +1,19 @@
-import Layout from "../components/Layout";
 import { useState } from "react";
 import {
-  LineChart,
-  Line,
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
-  PieChart,
-  Pie,
+  BarChart,
+  CartesianGrid,
   Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import Layout from "../components/Layout";
 
 export default function AdminPanel({ darkMode, toggleDarkMode }) {
   // Mock data for user growth
@@ -401,7 +398,7 @@ export default function AdminPanel({ darkMode, toggleDarkMode }) {
                           `${name} ${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {userTiersData.map((entry, index) => (
+                        {userTiersData.map((_entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={COLORS[index % COLORS.length]}

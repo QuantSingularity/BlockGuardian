@@ -1,6 +1,5 @@
-import React from "react";
-import { View, Text, ActivityIndicator, Modal } from "react-native";
 import { styled } from "nativewind";
+import { ActivityIndicator, Modal, Text, View } from "react-native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);

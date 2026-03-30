@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useWallet } from "./WalletProvider";
 import { ethers } from "ethers";
+import { useEffect, useState } from "react";
+import { useWallet } from "./WalletProvider";
 
 const BlockchainExplorer = () => {
   const { library, account, network, chainId, connected } = useWallet();
@@ -188,9 +188,9 @@ const BlockchainExplorer = () => {
         };
       } else if (searchType === "block") {
         // Check if input is a number
-        const blockNumber = parseInt(searchQuery);
+        const blockNumber = parseInt(searchQuery, 10);
 
-        if (isNaN(blockNumber)) {
+        if (Number.isNaN(blockNumber)) {
           throw new Error("Invalid block number");
         }
 
@@ -249,7 +249,7 @@ const BlockchainExplorer = () => {
             decimals: decimals,
             totalSupply: ethers.utils.formatUnits(totalSupply, decimals),
           };
-        } catch (error) {
+        } catch (_error) {
           throw new Error("Not a valid ERC20 token");
         }
       }
@@ -289,7 +289,13 @@ const BlockchainExplorer = () => {
         fetchContractData(firstContract);
       }
     }
-  }, [view, connected, library, chainId]);
+  }, [
+    view,
+    contractAddresses,
+    fetchContractData,
+    fetchRecentBlocks,
+    fetchRecentTransactions,
+  ]);
 
   // Render loading state
   if (!connected) {

@@ -1,7 +1,6 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
+import { styled } from "nativewind";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -61,7 +60,7 @@ const TransactionList = ({
   const renderItem = ({ item }) => (
     <StyledTouchableOpacity
       className="bg-gray-800 p-4 rounded-lg mb-3 border border-gray-700"
-      onPress={() => onTransactionPress && onTransactionPress(item)}
+      onPress={() => onTransactionPress?.(item)}
       activeOpacity={0.7}
     >
       <StyledView className="flex-row justify-between items-center mb-2">

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import Web3Modal from "web3modal";
-import WalletConnectProvider from "@walletconnect/web3-provider";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
+import WalletConnectProvider from "@walletconnect/web3-provider";
+import { ethers } from "ethers";
+import React, { useEffect, useState } from "react";
+import Web3Modal from "web3modal";
 
 // Create a context for the wallet
 export const WalletContext = React.createContext();
@@ -150,7 +150,7 @@ export const WalletProvider = ({ children }) => {
     if (web3Modal.cachedProvider) {
       connectWallet();
     }
-  }, []);
+  }, [connectWallet]);
 
   // Set up event listeners
   useEffect(() => {
@@ -167,7 +167,7 @@ export const WalletProvider = ({ children }) => {
         }
       };
     }
-  }, [provider]);
+  }, [provider, disconnectWallet, handleAccountsChanged, handleChainChanged]);
 
   // Contract interaction helpers
   const getContract = (address, abi) => {

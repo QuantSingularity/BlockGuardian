@@ -1,24 +1,21 @@
-import Layout from "../components/Layout";
-import { useState } from "react";
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
 } from "recharts";
+import Layout from "../components/Layout";
 
 export default function AIRecommendations({ darkMode, toggleDarkMode }) {
   // Mock data for AI prediction accuracy

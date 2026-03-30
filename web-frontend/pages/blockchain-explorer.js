@@ -1,19 +1,15 @@
-import Layout from "../components/Layout";
 import { useState } from "react";
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import Layout from "../components/Layout";
 
 export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
   // Mock data for blockchain transactions

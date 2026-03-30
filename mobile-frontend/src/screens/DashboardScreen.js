@@ -1,8 +1,7 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
 import { useWalletConnectModal } from "@walletconnect/modal-react-native"; // Import WalletConnect hook
+import { styled } from "nativewind";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);

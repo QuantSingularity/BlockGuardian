@@ -1,15 +1,13 @@
-import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-
+import AdminScreen from "../screens/AdminScreen";
+import AIRecommendationsScreen from "../screens/AIRecommendationsScreen";
+import BlockchainExplorerScreen from "../screens/BlockchainExplorerScreen";
+import DashboardScreen from "../screens/DashboardScreen";
 // Import screens
 import LoginScreen from "../screens/LoginScreen";
-import DashboardScreen from "../screens/DashboardScreen";
-import PortfolioScreen from "../screens/PortfolioScreen";
 import MarketAnalysisScreen from "../screens/MarketAnalysisScreen";
-import BlockchainExplorerScreen from "../screens/BlockchainExplorerScreen";
-import AIRecommendationsScreen from "../screens/AIRecommendationsScreen";
-import AdminScreen from "../screens/AdminScreen";
+import PortfolioScreen from "../screens/PortfolioScreen";
 import SecurityCheckScreen from "../screens/SecurityCheckScreen"; // Import the new screen
 
 const Stack = createNativeStackNavigator();

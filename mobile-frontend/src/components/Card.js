@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import { styled } from "nativewind";
 import { Ionicons } from "@expo/vector-icons";
+import { styled } from "nativewind";
+import React from "react";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);

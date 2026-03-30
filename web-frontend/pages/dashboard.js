@@ -1,22 +1,17 @@
-import Layout from "../components/Layout";
 import { useState } from "react";
 import {
-  LineChart,
-  Line,
-  AreaChart,
   Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
+  AreaChart,
+  CartesianGrid,
   Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import Layout from "../components/Layout";
 
 export default function Dashboard({ darkMode, toggleDarkMode }) {
   // Mock data for portfolio value over time
@@ -335,7 +330,7 @@ export default function Dashboard({ darkMode, toggleDarkMode }) {
                           `${name} ${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {assetAllocationData.map((entry, index) => (
+                        {assetAllocationData.map((_entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={COLORS[index % COLORS.length]}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Custom hook for handling wallet connection state
@@ -26,7 +26,7 @@ const useWallet = (provider) => {
         fetchBalance();
       }
     }
-  }, [provider]);
+  }, [provider, fetchBalance]);
 
   // Connect wallet
   const connect = async () => {
@@ -94,7 +94,7 @@ const useWallet = (provider) => {
 
   // Fetch wallet balance
   const fetchBalance = async () => {
-    if (!provider || !provider.isConnected || !provider.address) {
+    if (!provider?.isConnected || !provider.address) {
       return;
     }
 

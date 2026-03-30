@@ -1,21 +1,18 @@
-import Layout from "../components/Layout";
-import { useState } from "react";
 import {
-  LineChart,
-  Line,
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
-  PieChart,
+  BarChart,
+  CartesianGrid,
+  Legend,
   Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
+import Layout from "../components/Layout";
 
 // Define Cell component if not available directly from recharts
 const Cell = (props) => {
@@ -218,7 +215,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
                       `${name} ${(percent * 100).toFixed(0)}%`
                     }
                   >
-                    {allocationData.map((entry, index) => (
+                    {allocationData.map((_entry, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}
@@ -247,7 +244,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
                   <CartesianGrid strokeDasharray="3 3" />
                   <Tooltip formatter={(value) => `${value}%`} />
                   <Bar dataKey="value" fill="#8884d8">
-                    {sectorData.map((entry, index) => (
+                    {sectorData.map((_entry, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}

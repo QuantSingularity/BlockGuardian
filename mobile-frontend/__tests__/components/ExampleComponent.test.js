@@ -1,7 +1,7 @@
 // Component Test: /BlockGuardian_Tests/BlockGuardian_tests/mobile-frontend/__tests__/components/ExampleComponent.test.js
-import React from "react";
-import { Text, View } from "react-native";
+
 import { render, screen } from "@testing-library/react-native";
+import { Text, View } from "react-native";
 
 // Note: The directory /BlockGuardian_Project/mobile-frontend/src/components was found to be empty.
 // This test file likely corresponds to a placeholder or example component that does not exist in the project.

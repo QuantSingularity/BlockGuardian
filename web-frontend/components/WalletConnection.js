@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { useWallet } from "./WalletProvider";
-import { ethers } from "ethers";
 
 const WalletConnection = () => {
   const {

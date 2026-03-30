@@ -1,6 +1,5 @@
-import React from "react";
-import { View, Text } from "react-native";
 import { styled } from "nativewind";
+import { Text, View } from "react-native";
 
 const StyledView = styled(View);
 const StyledText = styled(Text);

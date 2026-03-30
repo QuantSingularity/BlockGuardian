@@ -1,6 +1,6 @@
 // Screen Test: /BlockGuardian_Tests/BlockGuardian_tests/mobile-frontend/__tests__/screens/DashboardScreen.test.js
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react-native";
+
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import DashboardScreen from "../../../../BlockGuardian_Project/mobile-frontend/src/screens/DashboardScreen";
 
 // Mock dependencies
