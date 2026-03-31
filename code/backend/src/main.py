@@ -153,12 +153,13 @@ def setup_logging(app: Any) -> Any:
 
 def initialize_extensions(app: Any) -> None:
     """Initialize Flask extensions"""
+    cors_origins = app.config.get("CORS_ORIGINS", ["*"])
     CORS(
         app,
-        origins=["*"],
+        origins=cors_origins,
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"],
-        supports_credentials=True,
+        supports_credentials=True if cors_origins != ["*"] else False,
     )
     db.init_app(app)
     db_manager.init_app(app)
@@ -346,5 +347,10 @@ def register_middleware(app: Any) -> None:
 
 app = create_app()
 if __name__ == "__main__":
-    config_name = os.getenv("FLASK_ENV", "development")
-    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
+    debug_mode = os.getenv("FLASK_ENV", "development") == "development"
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000)),
+        debug=debug_mode,
+        threaded=True,
+    )

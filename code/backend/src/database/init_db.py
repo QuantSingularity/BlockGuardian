@@ -11,6 +11,7 @@ from decimal import Decimal
 from typing import Any
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from sqlalchemy import text
 from src.config import get_config
 from src.logging_config import get_logger
 from src.models.ai_models import AIModel, ModelStatus, ModelType
@@ -39,52 +40,84 @@ def create_indexes() -> None:
     try:
         with db_manager.engine.connect() as conn:
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_users_email_status ON users(email, status)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_users_email_status ON users(email, status)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_users_kyc_status ON users(kyc_status)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_users_kyc_status ON users(kyc_status)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_users_last_login ON users(last_login)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_portfolios_owner_active ON portfolios(owner_id, is_active)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_portfolios_owner_active ON portfolios(owner_id, is_active)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_portfolios_type_status ON portfolios(portfolio_type, is_active)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_portfolios_type_status ON portfolios(portfolio_type, is_active)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, created_at)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, created_at)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_transactions_portfolio_date ON transactions(portfolio_id, created_at)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_transactions_portfolio_date ON transactions(portfolio_id, created_at)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_transactions_status_type ON transactions(status, transaction_type)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_transactions_status_type ON transactions(status, transaction_type)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_assets_symbol_active ON assets(symbol, is_active)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_assets_symbol_active ON assets(symbol, is_active)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_assets_type_tradeable ON assets(asset_type, is_tradeable)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_assets_type_tradeable ON assets(asset_type, is_tradeable)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_holdings_portfolio_active ON portfolio_holdings(portfolio_id, is_active)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_holdings_portfolio_active ON portfolio_holdings(portfolio_id, is_active)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_holdings_asset_active ON portfolio_holdings(asset_id, is_active)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_holdings_asset_active ON portfolio_holdings(asset_id, is_active)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_ai_models_type_status ON ai_models(model_type, status)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_ai_models_type_status ON ai_models(model_type, status)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_predictions_model_timestamp ON model_predictions(model_id, prediction_timestamp)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_predictions_model_timestamp ON model_predictions(model_id, prediction_timestamp)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_fraud_user_timestamp ON fraud_detections(user_id, created_at)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_fraud_user_timestamp ON fraud_detections(user_id, created_at)"
+                )
             )
             conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_fraud_risk_level ON fraud_detections(risk_level)"
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_fraud_risk_level ON fraud_detections(risk_level)"
+                )
             )
             conn.commit()
         logging.info("Database indexes created successfully")

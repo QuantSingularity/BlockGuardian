@@ -7,6 +7,7 @@ import json
 from typing import Any
 
 from flask import Blueprint, g, jsonify, request
+from flask_jwt_extended import get_jwt
 from src.models.base import db_manager
 from src.models.user import User, UserStatus
 from src.security.audit import AuditEventType, audit_logger
@@ -61,11 +62,13 @@ def register() -> None:
                 username=username,
                 first_name=data["first_name"],
                 last_name=data["last_name"],
-                status=UserStatus.PENDING,
+                status=UserStatus.ACTIVE,
             )
             user.set_password(data["password"])
-            if "phone" in data:
-                user.set_encrypted_field("phone", data["phone"], "pii")
+            if "phone_number" in data:
+                user.set_encrypted_field("phone_number", data["phone_number"], "pii")
+            elif "phone" in data:
+                user.set_encrypted_field("phone_number", data["phone"], "pii")
             if "country" in data:
                 user.country = data["country"]
             session.add(user)
@@ -212,10 +215,10 @@ def login() -> Any:
 def logout() -> Any:
     """Logout user and revoke tokens"""
     try:
-        auth_header = request.headers.get("Authorization")
-        if auth_header:
-            token = auth_header.split(" ")[1]
-            auth_manager.revoke_token(token)
+        jwt_claims = get_jwt()
+        jti = jwt_claims.get("jti")
+        if jti:
+            auth_manager.revoke_token(jti, expires_in=3600)
             audit_logger.log_authentication_event(
                 AuditEventType.LOGOUT, user_id=g.current_user_id, success=True
             )

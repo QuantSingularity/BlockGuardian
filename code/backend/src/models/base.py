@@ -9,19 +9,14 @@ from typing import Any, Dict, List, Optional
 from flask import g, has_request_context
 from sqlalchemy import Boolean, Column, DateTime, Integer, Text, create_engine
 from sqlalchemy.event import listens_for
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
 from src.config import current_config
 from src.security.audit import audit_logger
 from src.security.encryption import encryption_manager
 
 
 class BaseModel:
-    """Base model with common fields and functionality"""
-
-    @declared_attr
-    def __tablename__(cls: Any) -> None:
-        return cls.__name__.lower()
+    """Base mixin with common fields and functionality for all ORM models"""
 
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -51,7 +46,7 @@ class BaseModel:
         return result
 
     def update_from_dict(
-        self, data: Dict[str, Any], exclude_fields: Optional[list[str]] = None
+        self, data: Dict[str, Any], exclude_fields: Optional[list] = None
     ) -> None:
         """Update model from dictionary"""
         if exclude_fields is None:
@@ -92,15 +87,21 @@ class DatabaseManager:
         """Initialize database manager with Flask app"""
         self.app = app
         db_config = current_config.database
-        self.engine = create_engine(
-            db_config.uri,
-            pool_size=db_config.pool_size,
-            max_overflow=db_config.max_overflow,
-            pool_timeout=db_config.pool_timeout,
-            pool_recycle=db_config.pool_recycle,
-            echo=db_config.echo,
-            echo_pool=db_config.echo_pool,
-        )
+        is_sqlite = db_config.uri.startswith("sqlite")
+        engine_kwargs = {
+            "echo": db_config.echo,
+            "echo_pool": db_config.echo_pool,
+        }
+        if not is_sqlite:
+            engine_kwargs.update(
+                {
+                    "pool_size": db_config.pool_size,
+                    "max_overflow": db_config.max_overflow,
+                    "pool_timeout": db_config.pool_timeout,
+                    "pool_recycle": db_config.pool_recycle,
+                }
+            )
+        self.engine = create_engine(db_config.uri, **engine_kwargs)
         self.session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(self.session_factory)
         Base.metadata.create_all(self.engine)
@@ -108,7 +109,7 @@ class DatabaseManager:
         # self._setup_audit_listeners()
         app.logger.info("Database manager initialized")
 
-    def get_session(self) -> None:
+    def get_session(self) -> Any:
         """Get database session"""
         if self.Session is None:
             raise RuntimeError("Database not initialized")
@@ -196,10 +197,12 @@ class AuditMixin:
         }
         import json
 
+        audit_log_data: list = []
         try:
-            audit_log_data: list[Dict[str, Any]] = json.loads(self.audit_log) if self.audit_log else []  # type: ignore[arg-type] if self.audit_log else []
+            if self.audit_log:
+                audit_log_data = json.loads(self.audit_log)
         except (json.JSONDecodeError, TypeError):
-            pass
+            audit_log_data = []
         audit_log_data.append(audit_entry)
         if len(audit_log_data) > 100:
             audit_log_data = audit_log_data[-100:]
@@ -279,7 +282,7 @@ class VersionMixin:
         self.version += 1  # type: ignore[assignment]
 
 
-def get_or_create(session: Any, model: Any, defaults: Any = None, **kwargs) -> None:
+def get_or_create(session: Any, model: Any, defaults: Any = None, **kwargs) -> Any:
     """Get existing record or create new one"""
     instance = session.query(model).filter_by(**kwargs).first()
     if instance:
@@ -295,7 +298,7 @@ def get_or_create(session: Any, model: Any, defaults: Any = None, **kwargs) -> N
 
 def bulk_insert_or_update(
     session: Any, model: Any, data_list: Any, update_fields: Any = None
-) -> None:
+) -> Any:
     """Bulk insert or update records"""
     if not data_list:
         return
@@ -308,7 +311,7 @@ def bulk_insert_or_update(
 
 def paginate_query(
     query: Any, page: int = 1, per_page: int = 20, max_per_page: int = 100
-) -> None:
+) -> Any:
     """Paginate SQLAlchemy query"""
     if per_page > max_per_page:
         per_page = max_per_page

@@ -23,7 +23,7 @@ from sqlalchemy import (
     Text,
 )
 from sqlalchemy.orm import relationship
-from src.models.base import AuditMixin, Base, EncryptedMixin, TimestampMixin
+from src.models.base import AuditMixin, Base, EncryptedMixin
 
 
 class AssetType(enum.Enum):
@@ -88,7 +88,7 @@ class RiskLevel(enum.Enum):
     VERY_HIGH = "very_high"
 
 
-class Portfolio(Base, AuditMixin, TimestampMixin):
+class Portfolio(Base, AuditMixin):
     """Portfolio model for managing investment portfolios"""
 
     __tablename__ = "portfolios"  # type: ignore[assignment]
@@ -115,7 +115,7 @@ class Portfolio(Base, AuditMixin, TimestampMixin):
     is_active = Column(Boolean, default=True, nullable=False)
     auto_rebalance = Column(Boolean, default=False, nullable=False)
     rebalance_frequency = Column(Integer, default=90)
-    owner = relationship("User", backref="portfolios")
+    owner = relationship("User", back_populates="portfolios")
     holdings = relationship(
         "PortfolioHolding", back_populates="portfolio", lazy="dynamic"
     )
@@ -217,7 +217,7 @@ class Portfolio(Base, AuditMixin, TimestampMixin):
         return snapshot
 
 
-class Asset(Base, TimestampMixin):
+class Asset(Base):
     """Financial asset model"""
 
     __tablename__ = "assets"  # type: ignore[assignment]
@@ -272,7 +272,7 @@ class Asset(Base, TimestampMixin):
         return [price.to_dict() for price in prices]
 
 
-class PortfolioHolding(Base, AuditMixin, TimestampMixin):
+class PortfolioHolding(Base, AuditMixin):
     """Individual asset holding within a portfolio"""
 
     __tablename__ = "portfolio_holdings"  # type: ignore[assignment]
@@ -350,7 +350,7 @@ class PortfolioHolding(Base, AuditMixin, TimestampMixin):
         return realized_pnl
 
 
-class Transaction(Base, AuditMixin, EncryptedMixin, TimestampMixin):
+class Transaction(Base, AuditMixin, EncryptedMixin):
     """Financial transaction model"""
 
     __tablename__ = "transactions"  # type: ignore[assignment]
@@ -380,7 +380,7 @@ class Transaction(Base, AuditMixin, EncryptedMixin, TimestampMixin):
     confirmation_number = Column(String(255))
     notes = Column(Text)
     transaction_metadata = Column(Text)
-    user = relationship("User", backref="transactions")
+    user = relationship("User", back_populates="transactions")
     portfolio = relationship("Portfolio", back_populates="transactions")
     asset = relationship("Asset", backref="transactions")
     __table_args__ = (

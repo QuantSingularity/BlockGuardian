@@ -58,7 +58,7 @@ class RateLimiter:
                     "REDIS_URL not found in config. Rate limiting will be disabled."
                 )
                 return
-            self.redis_client = redis.from_url(
+            self.redis_client = redis.Redis.from_url(
                 redis_url,
                 max_connections=getattr(current_config, "REDIS_MAX_CONNECTIONS", 10),
                 socket_timeout=getattr(current_config, "REDIS_SOCKET_TIMEOUT", 5),

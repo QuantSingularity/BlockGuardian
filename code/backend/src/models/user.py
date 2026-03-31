@@ -18,8 +18,9 @@ import qrcode
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON, Boolean, Column, DateTime
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from .base import db_manager
 
@@ -71,7 +72,6 @@ class User(db_manager.Base):
     """User model"""
 
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(100), unique=True, nullable=False, index=True)
     password_hash = Column(String(128), nullable=False)
@@ -145,12 +145,14 @@ class User(db_manager.Base):
     def set_password(self, password: str) -> None:
         """Hashes the password and stores the hash and salt."""
         self.salt = os.urandom(16).hex()
-        self.password_hash = self._hash_password(password, self.salt)
+        self.password_hash = generate_password_hash(
+            password, method="pbkdf2:sha256:260000"
+        )
         self.password_changed_at = datetime.now(timezone.utc)
 
     def check_password(self, password: str) -> bool:
         """Checks if the provided password matches the stored hash."""
-        return self.password_hash == self._hash_password(password, self.salt)
+        return check_password_hash(self.password_hash, password)
 
     def verify_password(self, password: str) -> bool:
         """Alias for check_password for compatibility"""
@@ -271,7 +273,7 @@ class User(db_manager.Base):
 
     def verify_mfa_token(self, token: str) -> bool:
         """Verify MFA token (TOTP or backup code)"""
-        if not self.mfa_enabled or not self.mfa_secret:
+        if not self.mfa_secret:
             return False
 
         # Verify TOTP
@@ -367,8 +369,7 @@ class UserSession(db_manager.Base):
     """User session model for tracking active sessions"""
 
     __tablename__ = "user_sessions"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     session_token = Column(String(255), unique=True, nullable=False, index=True)
     ip_address = Column(String(45))
     user_agent = Column(Text)
@@ -379,7 +380,11 @@ class UserSession(db_manager.Base):
     expires_at = Column(DateTime(timezone=True), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
 
-    user = relationship("User", foreign_keys=[user_id])
+    user = relationship(
+        "User",
+        foreign_keys="UserSession.user_id",
+        primaryjoin="UserSession.user_id == User.id",
+    )
 
     def is_expired(self) -> bool:
         """Check if session is expired"""

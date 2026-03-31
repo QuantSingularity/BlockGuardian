@@ -38,7 +38,9 @@ def get_portfolios() -> Any:
         try:
             query = (
                 session.query(Portfolio)
-                .filter(Portfolio.owner_id == g.current_user_id, Portfolio.is_active)
+                .filter(
+                    Portfolio.owner_id == g.current_user_id, Portfolio.is_active == True
+                )
                 .order_by(Portfolio.created_at.desc())
             )
             result = paginate_query(query, page, per_page)

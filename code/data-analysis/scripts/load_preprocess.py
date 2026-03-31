@@ -11,7 +11,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 RESOURCES_DIR = os.path.join(BASE_DIR, "resources", "datasets")
 TRANSACTION_FILE = os.path.join(RESOURCES_DIR, "transaction_history.csv")
 FRAUD_FILE = os.path.join(RESOURCES_DIR, "fraud_patterns.csv")

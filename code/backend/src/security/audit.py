@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import JSON, Column, DateTime
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import Index, Integer, String, Text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +59,11 @@ class AuditEventType(Enum):
 
 
 # Create a temporary base for AuditLog
-AuditLogBase = declarative_base()
+class AuditLogBase(DeclarativeBase):
+    pass
 
 
-class AuditLog(AuditLogBase):  # type: ignore  # type: ignore[misc]
+class AuditLog(AuditLogBase):
     """SQLAlchemy model for the Audit Log"""
 
     __tablename__ = "audit_logs"

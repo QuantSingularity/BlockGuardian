@@ -12,7 +12,6 @@ services:
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     networks:
@@ -22,28 +21,34 @@ services:
       test: ["CMD-SHELL", "pg_isready -U blockguardian -d blockguardian"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 10s
 
   # Redis Cache and Session Store
   redis:
     image: redis:7-alpine
     container_name: blockguardian_redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-redis_password}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     ports:
       - "6379:6379"
     networks:
       - blockguardian_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_password}", "ping"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 10s
 
-  # Backend API Server
+  # Backend API Server (Production)
   backend:
     build:
       context: ./backend
@@ -54,12 +59,16 @@ services:
       - FLASK_ENV=production
       - DATABASE_URL=postgresql://blockguardian:${POSTGRES_PASSWORD:-blockguardian_password}@postgres:5432/blockguardian
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
-      - SECRET_KEY=${SECRET_KEY:-your-super-secret-key}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-jwt-secret-key}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-secret-key-32chars}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production-jwt-key-32chars}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PORT=5000
     volumes:
-      - ./backend/uploads:/app/uploads
-      - ./backend/logs:/app/logs
-      - ./backend/backups:/app/backups
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+      - backend_backups:/app/backups
     ports:
       - "5000:5000"
     networks:
@@ -75,30 +84,38 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
 
-  # Frontend Application
-  frontend:
+  # Backend (Development mode with hot-reload)
+  backend_dev:
     build:
-      context: ./frontend
+      context: ./backend
       dockerfile: Dockerfile
-      target: production
-    container_name: blockguardian_frontend
+      target: development
+    container_name: blockguardian_backend_dev
+    profiles:
+      - dev
     environment:
-      - NODE_ENV=production
-      - REACT_APP_API_URL=http://backend:5000/api
-      - REACT_APP_WS_URL=ws://backend:5000
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://blockguardian:${POSTGRES_PASSWORD:-blockguardian_password}@postgres:5432/blockguardian
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-jwt-key}
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+    volumes:
+      - ./backend:/app
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
     ports:
-      - "3000:3000"
+      - "5000:5000"
     networks:
       - blockguardian_network
     depends_on:
-      - backend
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # Celery Worker for Background Tasks
   celery_worker:
@@ -107,16 +124,22 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: blockguardian_celery_worker
-    command: celery -A src.celery_app worker --loglevel=info --concurrency=4
+    command: >
+      celery -A src.main:celery_app worker
+      --loglevel=info
+      --concurrency=4
+      --queues=default,high_priority,compliance
     environment:
       - FLASK_ENV=production
       - DATABASE_URL=postgresql://blockguardian:${POSTGRES_PASSWORD:-blockguardian_password}@postgres:5432/blockguardian
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-secret-key-32chars}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production-jwt-key-32chars}
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/2
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/3
     volumes:
-      - ./backend/uploads:/app/uploads
-      - ./backend/logs:/app/logs
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
     networks:
       - blockguardian_network
     depends_on:
@@ -133,15 +156,20 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: blockguardian_celery_beat
-    command: celery -A src.celery_app beat --loglevel=info --schedule=/tmp/celerybeat-schedule
+    command: >
+      celery -A src.main:celery_app beat
+      --loglevel=info
+      --schedule=/tmp/celerybeat-schedule
     environment:
       - FLASK_ENV=production
       - DATABASE_URL=postgresql://blockguardian:${POSTGRES_PASSWORD:-blockguardian_password}@postgres:5432/blockguardian
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-secret-key-32chars}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production-jwt-key-32chars}
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/2
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/3
     volumes:
-      - ./backend/logs:/app/logs
+      - backend_logs:/app/logs
     networks:
       - blockguardian_network
     depends_on:
@@ -153,33 +181,33 @@ services:
 
   # Nginx Reverse Proxy
   nginx:
-    image: nginx:alpine
+    image: nginx:1.25-alpine
     container_name: blockguardian_nginx
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
-      - ./frontend/build:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
     ports:
       - "80:80"
       - "443:443"
     networks:
       - blockguardian_network
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "nginx", "-t"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # Prometheus Monitoring
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.51.0
     container_name: blockguardian_prometheus
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
@@ -196,15 +224,17 @@ services:
 
   # Grafana Dashboard
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.4.0
     container_name: blockguardian_grafana
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin_password}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
     ports:
       - "3001:3000"
     networks:
@@ -213,53 +243,12 @@ services:
       - prometheus
     restart: unless-stopped
 
-  # Elasticsearch for Logging
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
-    container_name: blockguardian_elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-    networks:
-      - blockguardian_network
-    restart: unless-stopped
-
-  # Kibana for Log Visualization
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.8.0
-    container_name: blockguardian_kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - "5601:5601"
-    networks:
-      - blockguardian_network
-    depends_on:
-      - elasticsearch
-    restart: unless-stopped
-
-  # Logstash for Log Processing
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.8.0
-    container_name: blockguardian_logstash
-    volumes:
-      - ./logging/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./backend/logs:/usr/share/logstash/logs
-    networks:
-      - blockguardian_network
-    depends_on:
-      - elasticsearch
-    restart: unless-stopped
-
-  # Blockchain Node (Ganache for development)
+  # Ganache (blockchain dev node) - only with --profile blockchain
   ganache:
     image: trufflesuite/ganache:latest
     container_name: blockguardian_ganache
+    profiles:
+      - blockchain
     ports:
       - "8545:8545"
     networks:
@@ -274,28 +263,6 @@ services:
       --gasPrice 20000000000
     restart: unless-stopped
 
-  # Backup Service
-  backup:
-    build:
-      context: ./backup
-      dockerfile: Dockerfile
-    container_name: blockguardian_backup
-    environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_DB=blockguardian
-      - POSTGRES_USER=blockguardian
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-blockguardian_password}
-      - BACKUP_SCHEDULE=0 2 * * *
-      - BACKUP_RETENTION_DAYS=30
-    volumes:
-      - ./backups:/backups
-      - postgres_data:/var/lib/postgresql/data:ro
-    networks:
-      - blockguardian_network
-    depends_on:
-      - postgres
-    restart: unless-stopped
-
 volumes:
   postgres_data:
     driver: local
@@ -305,7 +272,13 @@ volumes:
     driver: local
   grafana_data:
     driver: local
-  elasticsearch_data:
+  backend_uploads:
+    driver: local
+  backend_logs:
+    driver: local
+  backend_backups:
+    driver: local
+  nginx_logs:
     driver: local
 
 networks:

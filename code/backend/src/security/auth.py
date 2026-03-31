@@ -293,7 +293,7 @@ class AuthManage:
 
     def verify_mfa_token(self, user: User, token: str) -> bool:
         """Verify MFA token (TOTP or backup code)"""
-        if not user.mfa_enabled or not user.mfa_secret:
+        if not user.mfa_secret:
             return False
         totp = pyotp.TOTP(user.mfa_secret)
         if totp.verify(token, valid_window=1):
@@ -588,7 +588,6 @@ class AuthManage:
 
 
 auth_manager = AuthManage()
-auth_manager = auth_manager
 
 
 def jwt_required(fn):
