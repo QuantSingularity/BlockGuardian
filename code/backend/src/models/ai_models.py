@@ -17,6 +17,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    Enum,
 )
 from sqlalchemy.orm import relationship
 from src.models.base import AuditMixin, Base, TimestampMixin
