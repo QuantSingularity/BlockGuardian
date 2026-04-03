@@ -3,14 +3,15 @@ Comprehensive authentication tests for BlockGuardian Backend
 Tests user registration, login, MFA, and security features
 """
 
-import json
 import os
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+import json
 from typing import Any
 
 import pytest
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from src.main import create_app
 from src.models.user import User, db
 
