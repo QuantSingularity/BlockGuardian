@@ -1,0 +1,40 @@
+---
+- name: restart sshd
+  systemd:
+    name: sshd
+    state: restarted
+  listen: restart sshd
+
+- name: reload sshd
+  systemd:
+    name: sshd
+    state: reloaded
+  listen: reload sshd
+
+- name: restart auditd
+  systemd:
+    name: auditd
+    state: restarted
+  listen: restart auditd
+
+- name: restart fail2ban
+  systemd:
+    name: fail2ban
+    state: restarted
+  listen: restart fail2ban
+
+- name: reload firewalld
+  systemd:
+    name: firewalld
+    state: reloaded
+  listen: reload firewalld
+
+- name: restart rsyslog
+  systemd:
+    name: rsyslog
+    state: restarted
+  listen: restart rsyslog
+
+- name: reload sysctl
+  command: sysctl --system
+  listen: reload sysctl

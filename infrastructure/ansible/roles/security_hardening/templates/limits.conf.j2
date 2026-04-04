@@ -1,0 +1,22 @@
+# Security Limits - Financial-Grade
+# Managed by Ansible
+
+# Prevent core dumps
+*               hard    core            0
+*               soft    core            0
+
+# Limit max processes
+*               hard    nproc           10000
+*               soft    nproc           5000
+
+# Limit open files
+*               hard    nofile          65536
+*               soft    nofile          32768
+
+# Limit stack size
+*               hard    stack           8192
+*               soft    stack           8192
+
+# Disable core dumps for all users
+*               hard    core            0
+root            hard    core            0

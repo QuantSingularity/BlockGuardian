@@ -1,34 +1,42 @@
 #!/bin/bash
-# Script to run terraform apply for a given environment
+# Terraform Apply Script
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+set -euo pipefail
 
-ENVIRONMENT=$1
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TERRAFORM_DIR="$(dirname "$SCRIPT_DIR")"
+ENVIRONMENT="${1:-dev}"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+log()  { echo -e "${GREEN}[$(date +'%H:%M:%S')] $1${NC}"; }
+warn() { echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING: $1${NC}"; }
+err()  { echo -e "${RED}[$(date +'%H:%M:%S')] ERROR: $1${NC}" >&2; exit 1; }
+
+if [[ ! "$ENVIRONMENT" =~ ^(dev|staging|prod)$ ]]; then
+    err "Invalid environment: $ENVIRONMENT"
+fi
+
+cd "$TERRAFORM_DIR"
+
 PLAN_FILE="${ENVIRONMENT}.tfplan"
-
-if [ -z "$ENVIRONMENT" ]; then
-  echo "Usage: $0 <environment> (e.g., dev, staging, prod)"
-  exit 1
+if [[ ! -f "$PLAN_FILE" ]]; then
+    err "Plan file not found: $PLAN_FILE. Run ./scripts/plan.sh $ENVIRONMENT first."
 fi
 
-ENV_DIR="../environments/$ENVIRONMENT"
-
-if [ ! -d "$ENV_DIR" ]; then
-  echo "Error: Environment directory 	'$ENV_DIR' not found."
-  exit 1
+if [[ "$ENVIRONMENT" == "prod" ]]; then
+    warn "You are about to apply changes to PRODUCTION!"
+    read -rp "Type 'yes-apply-prod' to confirm: " confirm
+    if [[ "$confirm" != "yes-apply-prod" ]]; then
+        log "Cancelled by user."
+        exit 0
+    fi
 fi
 
-if [ ! -f "../$PLAN_FILE" ]; then
-  echo "Error: Plan file '../$PLAN_FILE' not found. Please run 'plan.sh $ENVIRONMENT' first."
-  exit 1
-fi
-
-echo "Running Terraform apply for environment: $ENVIRONMENT using plan file: $PLAN_FILE"
-
-# Navigate to the main Terraform configuration directory
-cd .. # Go up to infrastructure/terraform/
-
+log "Applying Terraform plan for environment: $ENVIRONMENT"
 terraform apply "$PLAN_FILE"
-
-echo "Terraform apply completed for $ENVIRONMENT."
+rm -f "$PLAN_FILE"
+log "Apply completed for $ENVIRONMENT"

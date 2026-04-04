@@ -1,13 +1,20 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: "{{ .Values.appName }}-config"
+  name: blockguardian-config
+  labels:
+    app: blockguardian
+    component: config
 data:
-  API_URL: "{{ .Values.backend.apiUrl }}"
-  REDIS_HOST: "{{ .Values.appName }}-redis"
-  REDIS_PORT: "{{ .Values.redis.containerPort }}"
-  DATABASE_HOST: "{{ .Values.appName }}-database"
-  DATABASE_PORT: "{{ .Values.database.containerPort }}"
-  DATABASE_NAME: "{{ .Values.database.name }}"
-  DATABASE_USER: "{{ .Values.database.user }}"
-  LOG_LEVEL: "{{ .Values.logLevel }}"
+  API_URL: "http://blockguardian-backend"
+  REDIS_HOST: "blockguardian-redis"
+  REDIS_PORT: "6379"
+  DATABASE_HOST: "blockguardian-database"
+  DATABASE_PORT: "3306"
+  DATABASE_NAME: "blockguardian"
+  DATABASE_USER: "bguser"
+  LOG_LEVEL: "info"
+  ENABLE_AUDIT_LOGS: "true"
+  SECURITY_HEADERS_ENABLED: "true"
+  RATE_LIMITING_ENABLED: "true"
+  COMPLIANCE_MODE: "financial-grade"

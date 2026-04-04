@@ -3,7 +3,7 @@ kind: Kustomization
 
 namespace: dev
 
-bases:
+resources:
   - ../../base
 
 namePrefix: dev-
@@ -18,9 +18,9 @@ images:
     newTag: dev-latest
 
 replicas:
-  - name: blockguardian-backend
+  - name: dev-blockguardian-backend
     count: 1
-  - name: blockguardian-frontend
+  - name: dev-blockguardian-frontend
     count: 1
 
 configMapGenerator:
@@ -34,13 +34,19 @@ secretGenerator:
   - name: blockguardian-secrets
     behavior: replace
     literals:
-      - database-url=postgresql://dev:dev@database:5432/blockguardian_dev
-      - jwt-secret=dev-jwt-secret-change-in-production
+      - database-url=mysql://bguser:dev-password@dev-blockguardian-database:3306/blockguardian
+      - mysql-root-password=dev-root-password
+      - mysql-password=dev-password
+      - jwt-secret=dev-jwt-secret-change-in-production-min32
+      - api-key=dev-api-key
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 patches:
   - target:
       kind: Ingress
-      name: blockguardian-ingress
+      name: dev-blockguardian-ingress
     patch: |-
       - op: replace
         path: /spec/rules/0/host

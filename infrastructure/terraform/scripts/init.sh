@@ -1,37 +1,36 @@
 #!/bin/bash
-# Script to run terraform init for a given environment
+# Terraform Init Script - Initializes Terraform for a given environment
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+set -euo pipefail
 
-ENVIRONMENT=$1
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TERRAFORM_DIR="$(dirname "$SCRIPT_DIR")"
+ENVIRONMENT="${1:-dev}"
 
-if [ -z "$ENVIRONMENT" ]; then
-  echo "Usage: $0 <environment> (e.g., dev, staging, prod)"
-  exit 1
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+log()  { echo -e "${GREEN}[$(date +'%H:%M:%S')] $1${NC}"; }
+warn() { echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING: $1${NC}"; }
+err()  { echo -e "${RED}[$(date +'%H:%M:%S')] ERROR: $1${NC}" >&2; exit 1; }
+
+if [[ ! "$ENVIRONMENT" =~ ^(dev|staging|prod)$ ]]; then
+    err "Invalid environment: $ENVIRONMENT. Must be: dev, staging, prod"
 fi
 
-ENV_DIR="../environments/$ENVIRONMENT"
+cd "$TERRAFORM_DIR"
 
-if [ ! -d "$ENV_DIR" ]; then
-  echo "Error: Environment directory '$ENV_DIR' not found."
-  exit 1
+log "Initializing Terraform for environment: $ENVIRONMENT"
+
+TFVARS="environments/${ENVIRONMENT}/terraform.tfvars"
+if [[ ! -f "$TFVARS" ]]; then
+    err "tfvars file not found: $TFVARS"
 fi
 
-echo "Running Terraform init for environment: $ENVIRONMENT"
+# Upgrade providers to latest compatible versions
+terraform init -upgrade
 
-# Navigate to the main Terraform configuration directory
-cd .. # Go up to infrastructure/terraform/
-
-terraform init -reconfigure -backend-config="$ENV_DIR/terraform.tfvars"
-
-# The -reconfigure flag is useful if backend settings change.
-# The -backend-config flag points to environment-specific backend configurations if you have them in tfvars.
-# If your backend.tf is generic and tfvars only contain variable values, you might not need -backend-config here
-# if the backend block itself doesn't use variables that are only defined in the tfvars.
-# However, it's common to pass the tfvars file for the backend if it contains specifics like state file paths per env.
-
-# If you are using local state and want to keep states separate per environment, you might need a different strategy
-# or ensure your backend.tf is configured to use a path that includes the environment name, potentially set via tfvars.
-
-echo "Terraform init completed for $ENVIRONMENT."
+log "Terraform initialized successfully for $ENVIRONMENT"
+log "Next: run ./scripts/plan.sh $ENVIRONMENT"

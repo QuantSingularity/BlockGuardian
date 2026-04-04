@@ -1,20 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ .Values.appName }}-backend"
-  namespace: '{{ .Values.namespace | default "default" }}'
+  name: blockguardian-backend
   labels:
-    app: "{{ .Values.appName }}-backend"
+    app: blockguardian-backend
     component: backend
     tier: application
-    version: "{{ .Values.backend.image.tag }}"
+    version: "1.0.0"
     compliance: "pci-dss,soc2,iso27001"
   annotations:
     deployment.kubernetes.io/revision: "1"
     security.policy/level: "financial-grade"
     compliance.standards: "PCI-DSS,SOC2,ISO27001"
 spec:
-  replicas: "{{ .Values.backend.replicas }}"
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -22,24 +21,22 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      app: "{{ .Values.appName }}-backend"
+      app: blockguardian-backend
       component: backend
   template:
     metadata:
       labels:
-        app: "{{ .Values.appName }}-backend"
+        app: blockguardian-backend
         component: backend
         tier: application
-        version: "{{ .Values.backend.image.tag }}"
+        version: "1.0.0"
         compliance: "pci-dss,soc2,iso27001"
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: '{{ .Values.backend.metricsPort | default "9090" }}'
+        prometheus.io/port: "9090"
         prometheus.io/path: "/metrics"
         security.policy/level: "financial-grade"
-        container.apparmor.security.beta.kubernetes.io/{{ .Values.appName }}-backend: runtime/default
     spec:
-      # Security Context for Pod
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
@@ -48,20 +45,10 @@ spec:
         seccompProfile:
           type: RuntimeDefault
         supplementalGroups: [10001]
-
-      # Service Account with minimal permissions
-      serviceAccountName: "{{ .Values.appName }}-backend-sa"
-      automountServiceAccountToken: false
-
-      # Image Pull Secrets
-      imagePullSecrets:
-        - name: "{{ .Values.imagePullSecrets }}"
-
-      # Node Selection and Affinity
+      serviceAccountName: blockguardian-backend-sa
+      automountServiceAccountToken: true
       nodeSelector:
         kubernetes.io/arch: amd64
-        node.kubernetes.io/instance-type: '{{ .Values.backend.nodeType | default "compute-optimized" }}'
-
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -72,7 +59,7 @@ spec:
                     - key: app
                       operator: In
                       values:
-                        - "{{ .Values.appName }}-backend"
+                        - blockguardian-backend
                 topologyKey: kubernetes.io/hostname
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -82,18 +69,14 @@ spec:
                     operator: NotIn
                     values:
                       - spot
-
-      # Tolerations
       tolerations:
         - key: "dedicated"
           operator: "Equal"
           value: "application"
           effect: "NoSchedule"
-
-      # Init Containers for security and setup
       initContainers:
         - name: security-init
-          image: '{{ .Values.backend.initImage | default "alpine:3.18" }}'
+          image: alpine:3.18
           securityContext:
             runAsNonRoot: true
             runAsUser: 10001
@@ -116,13 +99,10 @@ spec:
               mountPath: /app
             - name: tmp-volume
               mountPath: /tmp
-
       containers:
-        - name: "{{ .Values.appName }}-backend"
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
-          imagePullPolicy: "{{ .Values.backend.image.pullPolicy }}"
-
-          # Security Context for Container
+        - name: blockguardian-backend
+          image: blockguardian/backend:latest
+          imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
             runAsUser: 10001
@@ -136,37 +116,31 @@ spec:
                 - NET_BIND_SERVICE
             seccompProfile:
               type: RuntimeDefault
-
-          # Ports
           ports:
             - name: http
-              containerPort: "{{ .Values.backend.containerPort }}"
+              containerPort: 8080
               protocol: TCP
             - name: metrics
-              containerPort: '{{ .Values.backend.metricsPort | default "9090" }}'
+              containerPort: 9090
               protocol: TCP
-
-          # Resource Limits and Requests
           resources:
             limits:
-              cpu: "{{ .Values.backend.resources.limits.cpu }}"
-              memory: "{{ .Values.backend.resources.limits.memory }}"
-              ephemeral-storage: '{{ .Values.backend.resources.limits.ephemeralStorage | default "1Gi" }}'
+              cpu: "1000m"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
             requests:
-              cpu: "{{ .Values.backend.resources.requests.cpu }}"
-              memory: "{{ .Values.backend.resources.requests.memory }}"
-              ephemeral-storage: '{{ .Values.backend.resources.requests.ephemeralStorage | default "100Mi" }}'
-
-          # Environment Variables
+              cpu: "100m"
+              memory: "128Mi"
+              ephemeral-storage: "100Mi"
           env:
             - name: NODE_ENV
-              value: "{{ .Values.environment }}"
+              value: "production"
             - name: PORT
-              value: "{{ .Values.backend.containerPort }}"
+              value: "8080"
             - name: METRICS_PORT
-              value: '{{ .Values.backend.metricsPort | default "9090" }}'
+              value: "9090"
             - name: LOG_LEVEL
-              value: '{{ .Values.backend.logLevel | default "info" }}'
+              value: "info"
             - name: ENABLE_AUDIT_LOGS
               value: "true"
             - name: SECURITY_HEADERS_ENABLED
@@ -177,15 +151,11 @@ spec:
               value: "true"
             - name: COMPLIANCE_MODE
               value: "financial-grade"
-
-          # Secrets from External Secret Manager
           envFrom:
             - secretRef:
-                name: "{{ .Values.appName }}-secrets"
+                name: blockguardian-secrets
             - configMapRef:
-                name: "{{ .Values.appName }}-config"
-
-          # Volume Mounts
+                name: blockguardian-config
           volumeMounts:
             - name: app-volume
               mountPath: /app
@@ -196,11 +166,6 @@ spec:
             - name: config-volume
               mountPath: /etc/app
               readOnly: true
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs
-              readOnly: true
-
-          # Health Checks
           livenessProbe:
             httpGet:
               path: /health/live
@@ -214,7 +179,6 @@ spec:
             timeoutSeconds: 10
             failureThreshold: 3
             successThreshold: 1
-
           readinessProbe:
             httpGet:
               path: /health/ready
@@ -228,7 +192,6 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
             successThreshold: 1
-
           startupProbe:
             httpGet:
               path: /health/startup
@@ -239,8 +202,6 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 30
             successThreshold: 1
-
-          # Lifecycle hooks
           lifecycle:
             preStop:
               exec:
@@ -251,10 +212,8 @@ spec:
                     echo "Graceful shutdown initiated..."
                     sleep 15
                     echo "Shutdown complete"
-
-        # Sidecar container for log shipping
         - name: log-shipper
-          image: '{{ .Values.logging.fluentbit.image | default "fluent/fluent-bit:2.1" }}'
+          image: fluent/fluent-bit:2.1
           securityContext:
             runAsNonRoot: true
             runAsUser: 10001
@@ -280,34 +239,6 @@ spec:
               readOnly: true
             - name: tmp-volume
               mountPath: /tmp
-
-        # Security and monitoring sidecar
-        - name: security-monitor
-          image: '{{ .Values.security.monitor.image | default "falcosecurity/falco:0.35.1" }}'
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 10001
-            runAsGroup: 10001
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop:
-                - ALL
-          resources:
-            limits:
-              cpu: 200m
-              memory: 256Mi
-            requests:
-              cpu: 100m
-              memory: 128Mi
-          volumeMounts:
-            - name: security-config
-              mountPath: /etc/falco
-              readOnly: true
-            - name: tmp-volume
-              mountPath: /tmp
-
-      # Volumes
       volumes:
         - name: app-volume
           emptyDir:
@@ -320,32 +251,17 @@ spec:
             sizeLimit: 500Mi
         - name: config-volume
           configMap:
-            name: "{{ .Values.appName }}-config"
-            defaultMode: 0644
-        - name: ssl-certs
-          secret:
-            secretName: "{{ .Values.appName }}-ssl-certs"
+            name: blockguardian-config
             defaultMode: 0644
         - name: fluentbit-config
           configMap:
-            name: "{{ .Values.appName }}-fluentbit-config"
-        - name: security-config
-          configMap:
-            name: "{{ .Values.appName }}-security-config"
-
-      # DNS Configuration
+            name: blockguardian-fluentbit-config
       dnsPolicy: ClusterFirst
       dnsConfig:
         options:
           - name: ndots
             value: "2"
           - name: edns0
-
-      # Termination Grace Period
       terminationGracePeriodSeconds: 30
-
-      # Priority Class for critical workloads
-      priorityClassName: '{{ .Values.backend.priorityClass | default "high-priority" }}'
-
-      # Restart Policy
+      priorityClassName: high-priority
       restartPolicy: Always

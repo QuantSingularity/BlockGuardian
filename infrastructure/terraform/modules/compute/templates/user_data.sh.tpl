@@ -224,10 +224,6 @@ KerberosTicketCleanup yes
 GSSAPIAuthentication no
 GSSAPICleanupCredentials yes
 
-# Set this to 'yes' to enable PAM authentication, account processing,
-# and session processing.
-UsePAM yes
-
 # Accept locale-related environment variables
 AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
 AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
@@ -555,7 +551,8 @@ log "Running final security checks..."
 
 # Check for rootkits
 rkhunter --update
-rkhunter --check --skip-keypress
+rkhunter --propupd
+rkhunter --check --skip-keypress --report-warnings-only
 
 # Set proper file permissions
 chmod 600 /etc/ssh/ssh_host_*_key

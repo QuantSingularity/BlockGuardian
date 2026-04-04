@@ -1,153 +1,231 @@
 #!/bin/bash
 # Infrastructure Validation Script
-# Runs all validation checks for Terraform, Kubernetes, and Ansible
+# Runs all validation checks for Terraform, Kubernetes, Ansible, and Docker
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_DIR="$(dirname "$SCRIPT_DIR")"
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+BLUE='\033[0;34m'
+NC='\033[0m'
 
 echo -e "${GREEN}=== BlockGuardian Infrastructure Validation ===${NC}\n"
 
-# Track validation results
 VALIDATION_PASSED=true
+WARNINGS=0
+ERRORS=0
 
-# Create validation logs directory
-mkdir -p "$INFRA_DIR/validation_logs"
+LOG_DIR="${INFRA_DIR}/logs/validation"
+mkdir -p "$LOG_DIR"
 
+pass()  { echo -e "${GREEN}  ✓ $1${NC}"; }
+fail()  { echo -e "${RED}  ✗ $1${NC}"; VALIDATION_PASSED=false; ((ERRORS++)); }
+warn()  { echo -e "${YELLOW}  ⚠ $1${NC}"; ((WARNINGS++)); }
+info()  { echo -e "${BLUE}  → $1${NC}"; }
+section() { echo -e "\n${YELLOW}=== $1 ===${NC}"; }
+
+# ─────────────────────────────────────────
 # Terraform Validation
-echo -e "${YELLOW}=== Terraform Validation ===${NC}"
+# ─────────────────────────────────────────
+section "Terraform Validation"
 cd "$INFRA_DIR/terraform"
 
-echo "- Checking Terraform format..."
-if terraform fmt -check -recursive 2>&1 | tee "$INFRA_DIR/validation_logs/terraform_fmt.log"; then
-    echo -e "${GREEN}✓ Terraform format check passed${NC}"
+info "Checking Terraform format..."
+if terraform fmt -check -recursive > "$LOG_DIR/terraform_fmt.log" 2>&1; then
+    pass "Terraform format check"
 else
-    echo -e "${RED}✗ Terraform format check failed${NC}"
-    VALIDATION_PASSED=false
+    fail "Terraform format check (run: terraform fmt -recursive)"
+    cat "$LOG_DIR/terraform_fmt.log"
 fi
 
-echo "- Initializing Terraform (local backend)..."
-if terraform init -backend=false 2>&1 | tee "$INFRA_DIR/validation_logs/terraform_init.log"; then
-    echo -e "${GREEN}✓ Terraform init passed${NC}"
+info "Initializing Terraform (local backend)..."
+if terraform init -backend=false -upgrade > "$LOG_DIR/terraform_init.log" 2>&1; then
+    pass "Terraform init"
 else
-    echo -e "${RED}✗ Terraform init failed${NC}"
-    VALIDATION_PASSED=false
+    fail "Terraform init"
+    cat "$LOG_DIR/terraform_init.log"
 fi
 
-echo "- Validating Terraform configuration..."
-if terraform validate 2>&1 | tee "$INFRA_DIR/validation_logs/terraform_validate.log"; then
-    echo -e "${GREEN}✓ Terraform validate passed${NC}"
+info "Validating Terraform configuration..."
+if terraform validate > "$LOG_DIR/terraform_validate.log" 2>&1; then
+    pass "Terraform validate"
 else
-    echo -e "${RED}✗ Terraform validate failed${NC}"
-    VALIDATION_PASSED=false
+    fail "Terraform validate"
+    cat "$LOG_DIR/terraform_validate.log"
 fi
 
-echo "- Running TFLint (if available)..."
+info "Running TFLint..."
 if command -v tflint &> /dev/null; then
-    if tflint --init && tflint 2>&1 | tee "$INFRA_DIR/validation_logs/tflint.log"; then
-        echo -e "${GREEN}✓ TFLint passed${NC}"
+    tflint --init > /dev/null 2>&1 || true
+    if tflint > "$LOG_DIR/tflint.log" 2>&1; then
+        pass "TFLint"
     else
-        echo -e "${YELLOW}⚠ TFLint found issues (check logs)${NC}"
+        warn "TFLint found issues (see $LOG_DIR/tflint.log)"
     fi
 else
-    echo -e "${YELLOW}⚠ TFLint not installed, skipping${NC}"
+    warn "tflint not installed, skipping"
 fi
 
-echo "- Running tfsec (if available)..."
+info "Running tfsec..."
 if command -v tfsec &> /dev/null; then
-    if tfsec . 2>&1 | tee "$INFRA_DIR/validation_logs/tfsec.log"; then
-        echo -e "${GREEN}✓ tfsec passed${NC}"
+    if tfsec . --no-color > "$LOG_DIR/tfsec.log" 2>&1; then
+        pass "tfsec"
     else
-        echo -e "${YELLOW}⚠ tfsec found issues (check logs)${NC}"
+        warn "tfsec found issues (see $LOG_DIR/tfsec.log)"
     fi
 else
-    echo -e "${YELLOW}⚠ tfsec not installed, skipping${NC}"
+    warn "tfsec not installed, skipping"
 fi
 
+# ─────────────────────────────────────────
 # Kubernetes Validation
-echo -e "\n${YELLOW}=== Kubernetes Validation ===${NC}"
+# ─────────────────────────────────────────
+section "Kubernetes Validation"
 cd "$INFRA_DIR/kubernetes"
 
-echo "- Running YAML lint (if available)..."
+info "Running YAML lint..."
 if command -v yamllint &> /dev/null; then
-    if yamllint -c "$INFRA_DIR/.yamllint" . 2>&1 | tee "$INFRA_DIR/validation_logs/kubernetes_yamllint.log"; then
-        echo -e "${GREEN}✓ YAML lint passed${NC}"
+    if yamllint -c "$INFRA_DIR/.yamllint" . > "$LOG_DIR/kubernetes_yamllint.log" 2>&1; then
+        pass "YAML lint"
     else
-        echo -e "${YELLOW}⚠ YAML lint found issues (check logs)${NC}"
+        warn "YAML lint found issues (see $LOG_DIR/kubernetes_yamllint.log)"
     fi
 else
-    echo -e "${YELLOW}⚠ yamllint not installed, skipping${NC}"
+    warn "yamllint not installed, skipping"
 fi
 
-echo "- Building Kustomize overlays..."
-if command -v kustomize &> /dev/null; then
+info "Building Kustomize overlays..."
+if command -v kustomize &> /dev/null || command -v kubectl &> /dev/null; then
+    BUILD_CMD="kustomize build"
+    command -v kustomize &> /dev/null || BUILD_CMD="kubectl kustomize"
+
     for env in dev staging prod; do
-        echo "  - Building $env environment..."
-        if kustomize build "environments/$env" > "$INFRA_DIR/validation_logs/kustomize_${env}.yaml" 2>&1; then
-            echo -e "${GREEN}✓ Kustomize build $env passed${NC}"
+        if $BUILD_CMD "environments/$env" > "$LOG_DIR/kustomize_${env}.yaml" 2>&1; then
+            pass "Kustomize build: $env"
         else
-            echo -e "${RED}✗ Kustomize build $env failed${NC}"
-            VALIDATION_PASSED=false
+            fail "Kustomize build: $env"
+            cat "$LOG_DIR/kustomize_${env}.yaml"
         fi
     done
 else
-    echo -e "${YELLOW}⚠ kustomize not installed, skipping${NC}"
+    warn "kustomize/kubectl not installed, skipping"
 fi
 
-echo "- Validating Kubernetes manifests with kubectl (if available)..."
+info "Validating manifests with kubectl dry-run..."
 if command -v kubectl &> /dev/null; then
-    echo "  - Testing kubectl dry-run on base manifests..."
-    if kubectl apply --dry-run=client -f base/ 2>&1 | tee "$INFRA_DIR/validation_logs/kubectl_dryrun.log"; then
-        echo -e "${GREEN}✓ kubectl dry-run passed${NC}"
-    else
-        echo -e "${YELLOW}⚠ kubectl dry-run found issues (check logs)${NC}"
-    fi
+    for env in dev staging prod; do
+        if [[ -f "$LOG_DIR/kustomize_${env}.yaml" ]]; then
+            if kubectl apply --dry-run=client -f "$LOG_DIR/kustomize_${env}.yaml" > "$LOG_DIR/kubectl_dryrun_${env}.log" 2>&1; then
+                pass "kubectl dry-run: $env"
+            else
+                warn "kubectl dry-run issues for $env (see $LOG_DIR/kubectl_dryrun_${env}.log)"
+            fi
+        fi
+    done
 else
-    echo -e "${YELLOW}⚠ kubectl not installed, skipping${NC}"
+    warn "kubectl not installed, skipping"
 fi
 
+# ─────────────────────────────────────────
 # Ansible Validation
-echo -e "\n${YELLOW}=== Ansible Validation ===${NC}"
+# ─────────────────────────────────────────
+section "Ansible Validation"
 cd "$INFRA_DIR/ansible"
 
-echo "- Running Ansible syntax check..."
+info "Running Ansible syntax check..."
 if command -v ansible-playbook &> /dev/null; then
-    if ansible-playbook playbooks/main.yml --syntax-check -i inventory/hosts.example.yml 2>&1 | tee "$INFRA_DIR/validation_logs/ansible_syntax.log"; then
-        echo -e "${GREEN}✓ Ansible syntax check passed${NC}"
+    if ansible-playbook playbooks/main.yml --syntax-check \
+        -i inventory/hosts.example.yml > "$LOG_DIR/ansible_syntax.log" 2>&1; then
+        pass "Ansible syntax check"
     else
-        echo -e "${RED}✗ Ansible syntax check failed${NC}"
-        VALIDATION_PASSED=false
+        fail "Ansible syntax check"
+        cat "$LOG_DIR/ansible_syntax.log"
     fi
 else
-    echo -e "${YELLOW}⚠ ansible-playbook not installed, skipping${NC}"
+    warn "ansible-playbook not installed, skipping"
 fi
 
-echo "- Running ansible-lint (if available)..."
+info "Running ansible-lint..."
 if command -v ansible-lint &> /dev/null; then
-    if ansible-lint playbooks/main.yml 2>&1 | tee "$INFRA_DIR/validation_logs/ansible_lint.log"; then
-        echo -e "${GREEN}✓ ansible-lint passed${NC}"
+    if ansible-lint playbooks/main.yml > "$LOG_DIR/ansible_lint.log" 2>&1; then
+        pass "ansible-lint"
     else
-        echo -e "${YELLOW}⚠ ansible-lint found issues (check logs)${NC}"
+        warn "ansible-lint found issues (see $LOG_DIR/ansible_lint.log)"
     fi
 else
-    echo -e "${YELLOW}⚠ ansible-lint not installed, skipping${NC}"
+    warn "ansible-lint not installed, skipping"
 fi
 
-# Final Summary
-echo -e "\n${YELLOW}=== Validation Summary ===${NC}"
-if [ "$VALIDATION_PASSED" = true ]; then
-    echo -e "${GREEN}✓ All critical validations passed!${NC}"
-    echo "Validation logs saved to: $INFRA_DIR/validation_logs/"
+# ─────────────────────────────────────────
+# Docker Validation
+# ─────────────────────────────────────────
+section "Docker Validation"
+cd "$INFRA_DIR"
+
+info "Validating docker-compose.yml..."
+if command -v docker &> /dev/null; then
+    if docker compose -f docker-compose.yml config > "$LOG_DIR/docker_compose_validate.log" 2>&1; then
+        pass "docker-compose.yml syntax"
+    else
+        fail "docker-compose.yml syntax"
+        cat "$LOG_DIR/docker_compose_validate.log"
+    fi
+
+    info "Validating docker-compose.prod.yml..."
+    if docker compose -f docker-compose.yml -f docker-compose.prod.yml config > "$LOG_DIR/docker_compose_prod_validate.log" 2>&1; then
+        pass "docker-compose.prod.yml syntax"
+    else
+        fail "docker-compose.prod.yml syntax"
+        cat "$LOG_DIR/docker_compose_prod_validate.log"
+    fi
+else
+    warn "docker not installed, skipping"
+fi
+
+# ─────────────────────────────────────────
+# Security Checks
+# ─────────────────────────────────────────
+section "Security Checks"
+
+info "Checking for hardcoded secrets..."
+SECRET_PATTERNS='password\s*=\s*"[^${\"]+'
+FOUND_SECRETS=false
+
+# Scan tfvars for hardcoded passwords (excluding example/template values)
+while IFS= read -r -d '' file; do
+    if grep -qiE 'db_password\s*=\s*"[^$]' "$file" 2>/dev/null; then
+        warn "Potential hardcoded password in: $file"
+        FOUND_SECRETS=true
+    fi
+done < <(find "$INFRA_DIR/terraform/environments" -name "*.tfvars" -print0)
+
+if [[ "$FOUND_SECRETS" == "false" ]]; then
+    pass "No hardcoded passwords in tfvars"
+fi
+
+info "Checking .env is gitignored..."
+if grep -q "^\.env$" "$INFRA_DIR/.gitignore" 2>/dev/null; then
+    pass ".env is gitignored"
+else
+    warn ".env is not in .gitignore - add it to prevent secret exposure"
+fi
+
+# ─────────────────────────────────────────
+# Summary
+# ─────────────────────────────────────────
+section "Validation Summary"
+echo -e "  Errors:   ${RED}${ERRORS}${NC}"
+echo -e "  Warnings: ${YELLOW}${WARNINGS}${NC}"
+echo "  Logs saved to: $LOG_DIR/"
+
+if [[ "$VALIDATION_PASSED" == "true" ]]; then
+    echo -e "\n${GREEN}✓ All critical validations passed!${NC}"
     exit 0
 else
-    echo -e "${RED}✗ Some validations failed. Check logs for details.${NC}"
-    echo "Validation logs saved to: $INFRA_DIR/validation_logs/"
+    echo -e "\n${RED}✗ ${ERRORS} critical validation(s) failed. Fix errors before deploying.${NC}"
     exit 1
 fi

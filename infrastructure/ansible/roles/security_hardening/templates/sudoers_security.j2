@@ -1,0 +1,14 @@
+# Security sudoers configuration - Financial-Grade
+# Managed by Ansible
+
+Defaults    requiretty
+Defaults    env_reset
+Defaults    mail_badpass
+Defaults    secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Defaults    logfile="/var/log/sudo.log"
+Defaults    log_input,log_output
+Defaults    use_pty
+Defaults    timestamp_timeout=5
+
+# Allow members of secadmin group to run all commands
+%secadmin ALL=(ALL) ALL

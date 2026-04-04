@@ -1,9 +1,12 @@
 ---
 # roles/database/vars/main.yml
-db_name: "{{ db_name }}"
-db_user: "{{ db_user }}"
-db_password: "{{ db_password }}"
-db_root_password: "{{ db_root_password }}"
+# These variables must be overridden via ansible-vault or extra-vars
+# Do NOT set real passwords here
+
+db_name: "blockguardian"
+db_user: "bguser"
+db_password: "{{ vault_db_password | mandatory('vault_db_password must be set via ansible-vault') }}"
+db_root_password: "{{ vault_db_root_password | mandatory('vault_db_root_password must be set via ansible-vault') }}"
 db_max_connections: 150
 db_max_allowed_packet: "64M"
 db_innodb_buffer_pool_size: "256M"

@@ -1,29 +1,35 @@
 #!/bin/bash
-# Script to run terraform plan for a given environment
+# Terraform Plan Script
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+set -euo pipefail
 
-ENVIRONMENT=$1
-PLAN_FILE="${ENVIRONMENT}.tfplan"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TERRAFORM_DIR="$(dirname "$SCRIPT_DIR")"
+ENVIRONMENT="${1:-dev}"
 
-if [ -z "$ENVIRONMENT" ]; then
-  echo "Usage: $0 <environment> (e.g., dev, staging, prod)"
-  exit 1
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+log() { echo -e "${GREEN}[$(date +'%H:%M:%S')] $1${NC}"; }
+err() { echo -e "${RED}[$(date +'%H:%M:%S')] ERROR: $1${NC}" >&2; exit 1; }
+
+if [[ ! "$ENVIRONMENT" =~ ^(dev|staging|prod)$ ]]; then
+    err "Invalid environment: $ENVIRONMENT"
 fi
 
-ENV_DIR="../environments/$ENVIRONMENT"
-
-if [ ! -d "$ENV_DIR" ]; then
-  echo "Error: Environment directory 	'$ENV_DIR' not found."
-  exit 1
+if [[ -z "${TF_VAR_db_password:-}" ]]; then
+    err "TF_VAR_db_password is not set. Export it before running plan."
 fi
 
-echo "Running Terraform plan for environment: $ENVIRONMENT"
+cd "$TERRAFORM_DIR"
 
-# Navigate to the main Terraform configuration directory
-cd .. # Go up to infrastructure/terraform/
+TFVARS="environments/${ENVIRONMENT}/terraform.tfvars"
+if [[ ! -f "$TFVARS" ]]; then
+    err "tfvars file not found: $TFVARS"
+fi
 
-terraform plan -var-file="$ENV_DIR/terraform.tfvars" -out="$PLAN_FILE"
-
-echo "Terraform plan completed for $ENVIRONMENT. Plan saved to $PLAN_FILE."
+log "Planning Terraform for environment: $ENVIRONMENT"
+terraform plan -var-file="$TFVARS" -out="${ENVIRONMENT}.tfplan"
+log "Plan saved to ${ENVIRONMENT}.tfplan"
+log "Next: run ./scripts/apply.sh $ENVIRONMENT"

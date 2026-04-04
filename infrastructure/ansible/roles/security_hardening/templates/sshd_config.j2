@@ -1,0 +1,53 @@
+# SSH Configuration - Financial-Grade Security Hardening
+# Managed by Ansible - do not edit manually
+
+Port 22
+Protocol 2
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512
+KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
+
+SyslogFacility AUTHPRIV
+LogLevel VERBOSE
+
+LoginGraceTime 60
+PermitRootLogin no
+StrictModes yes
+MaxAuthTries 3
+MaxSessions 2
+
+PubkeyAuthentication yes
+PasswordAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+UsePAM yes
+
+KerberosAuthentication no
+GSSAPIAuthentication no
+GSSAPICleanupCredentials yes
+
+UseDNS no
+AllowTcpForwarding no
+AllowAgentForwarding no
+GatewayPorts no
+X11Forwarding no
+PermitTunnel no
+PermitUserEnvironment no
+Compression no
+
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+HostbasedAuthentication no
+IgnoreUserKnownHosts yes
+IgnoreRhosts yes
+
+Banner /etc/issue.net
+Subsystem sftp /usr/libexec/openssh/sftp-server
+
+AcceptEnv LANG LC_*

@@ -1,0 +1,21 @@
+# Rsyslog Security Configuration - Financial-Grade
+# Managed by Ansible
+
+# Log authentication events
+auth,authpriv.*                 /var/log/auth.log
+
+# Log sudo events
+local2.*                        /var/log/sudo.log
+
+# Log security events
+*.crit                          /var/log/critical.log
+kern.*                          /var/log/kern.log
+
+# Log all failed logins
+:msg, contains, "Failed password" /var/log/failed-logins.log
+:msg, contains, "Invalid user"    /var/log/failed-logins.log
+
+# Restrict log file permissions on creation
+$FileCreateMode 0640
+$DirCreateMode 0755
+$Umask 0022

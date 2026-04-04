@@ -45,9 +45,6 @@ resource "aws_launch_template" "app" {
   instance_type = var.instance_type
   key_name      = var.key_name
 
-  # Security configurations
-  vpc_security_group_ids = var.security_group_ids
-
   # IAM instance profile for secure access
   iam_instance_profile {
     name = var.instance_profile_name

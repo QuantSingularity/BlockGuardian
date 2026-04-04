@@ -1,0 +1,20 @@
+{
+  "timestamp": "{{ ansible_date_time.iso8601 }}",
+  "hostname": "{{ inventory_hostname }}",
+  "os_family": "{{ ansible_os_family }}",
+  "os_distribution": "{{ ansible_distribution }}",
+  "os_version": "{{ ansible_distribution_version }}",
+  "kernel": "{{ ansible_kernel }}",
+  "compliance_standards": ["PCI-DSS", "SOC2", "ISO27001"],
+  "hardening_completed": true,
+  "controls_applied": {
+    "ssh_hardening": true,
+    "password_policy": true,
+    "kernel_hardening": true,
+    "filesystem_hardening": true,
+    "network_hardening": true,
+    "audit_logging": true,
+    "log_rotation": true,
+    "unnecessary_packages_removed": true
+  }
+}

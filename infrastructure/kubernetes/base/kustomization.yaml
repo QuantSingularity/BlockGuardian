@@ -6,17 +6,17 @@ resources:
   - backend-role.yaml
   - backend-rolebinding.yaml
   - backend-service.yaml
-  - backend-deployment-fixed.yaml
+  - backend-deployment.yaml
   - frontend-service.yaml
-  - frontend-deployment-fixed.yaml
+  - frontend-deployment.yaml
   - database-service.yaml
-  - database-statefulset-fixed.yaml
+  - database-statefulset.yaml
   - redis-service.yaml
-  - redis-deployment-fixed.yaml
+  - redis-deployment.yaml
   - redis-pvc.yaml
-  - ingress-fixed.yaml
-  - app-configmap-fixed.yaml
-  - app-secrets-example.yaml
+  - ingress.yaml
+  - app-configmap.yaml
+  - app-secrets.yaml
   - monitoring/prometheus/prometheus.yaml
   - monitoring/alertmanager/alertmanager.yaml
   - monitoring/loki/loki-grafana.yaml
@@ -27,18 +27,5 @@ commonLabels:
   app.kubernetes.io/name: blockguardian
   app.kubernetes.io/managed-by: kustomize
 
-configMapGenerator:
-  - name: blockguardian-config
-    literals:
-      - NODE_ENV=production
-      - LOG_LEVEL=info
-      - ENABLE_AUDIT_LOGS=true
-
-secretGenerator:
-  - name: blockguardian-secrets
-    literals:
-      - database-url=postgres://user:pass@localhost:5432/db # Override in overlays
-      - jwt-secret=change-me-in-overlays
-
 generatorOptions:
-  disableNameSuffixHash: false
+  disableNameSuffixHash: true

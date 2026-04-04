@@ -3,7 +3,7 @@ kind: Kustomization
 
 namespace: staging
 
-bases:
+resources:
   - ../../base
 
 namePrefix: staging-
@@ -18,9 +18,9 @@ images:
     newTag: staging-latest
 
 replicas:
-  - name: blockguardian-backend
+  - name: staging-blockguardian-backend
     count: 2
-  - name: blockguardian-frontend
+  - name: staging-blockguardian-frontend
     count: 2
 
 configMapGenerator:
@@ -30,19 +30,25 @@ configMapGenerator:
       - NODE_ENV=staging
       - LOG_LEVEL=info
 
-# Note: Configure secrets via external secret manager or sealed-secrets
-# Do not commit actual secrets here
+# In production environments use external secrets manager (AWS Secrets Manager, Vault, Sealed Secrets)
+# Replace these placeholders with your secret management solution
 secretGenerator:
   - name: blockguardian-secrets
     behavior: replace
     literals:
       - database-url=REPLACE_WITH_ACTUAL_SECRET
+      - mysql-root-password=REPLACE_WITH_ACTUAL_SECRET
+      - mysql-password=REPLACE_WITH_ACTUAL_SECRET
       - jwt-secret=REPLACE_WITH_ACTUAL_SECRET
+      - api-key=REPLACE_WITH_ACTUAL_SECRET
+
+generatorOptions:
+  disableNameSuffixHash: true
 
 patches:
   - target:
       kind: Ingress
-      name: blockguardian-ingress
+      name: staging-blockguardian-ingress
     patch: |-
       - op: replace
         path: /spec/rules/0/host

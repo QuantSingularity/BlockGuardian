@@ -1,57 +1,38 @@
 # BlockGuardian Terraform Variables Example
-# Copy this file to terraform.tfvars and fill in your values
-# DO NOT commit terraform.tfvars to version control
+# Copy this file to environments/<env>/terraform.tfvars and fill in values
+# NEVER commit terraform.tfvars files with real credentials
 
-# AWS Configuration
-aws_region = "us-west-2"
+aws_region  = "us-west-2"
+environment = "dev"   # dev | staging | prod
+app_name    = "blockguardian"
 
-# Environment
-environment = "dev"  # Options: dev, staging, prod
+# Network
+vpc_cidr              = "10.0.0.0/16"
+availability_zones    = ["us-west-2a", "us-west-2b", "us-west-2c"]
+public_subnet_cidrs   = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+database_subnet_cidrs = ["10.0.7.0/24", "10.0.8.0/24", "10.0.9.0/24"]
 
-# Application
-app_name = "blockguardian"
+enable_management_subnet = false
+management_subnet_cidrs  = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
 
-# Network Configuration
-vpc_cidr = "10.0.0.0/16"
+# Compute
+instance_type         = "t3.micro"       # t3.micro | t3.medium | t3.large
+key_name              = "your-key-name"
+instance_profile_name = "blockguardian-dev-ec2-profile"
 
-availability_zones = [
-  "us-west-2a",
-  "us-west-2b",
-  "us-west-2c"
-]
-
-public_subnet_cidrs = [
-  "10.0.1.0/24",
-  "10.0.2.0/24",
-  "10.0.3.0/24"
-]
-
-private_subnet_cidrs = [
-  "10.0.4.0/24",
-  "10.0.5.0/24",
-  "10.0.6.0/24"
-]
-
-# Compute Configuration
-instance_type = "t3.micro"  # Adjust for production: t3.medium or larger
-key_name      = null        # Set to your SSH key pair name or leave null
-
-# Database Configuration
-db_instance_class = "db.t3.micro"  # Adjust for production: db.t3.medium or larger
+# Database
+db_instance_class = "db.t3.micro"    # db.t3.micro | db.t3.medium | db.t3.large
 db_name           = "blockguardian"
+db_username       = "bgadmin"
+db_engine         = "mysql"
+db_family         = "mysql8.0"
+# db_password is intentionally omitted — set via:
+#   export TF_VAR_db_password="your-secure-password"
 
-# IMPORTANT: Set these via environment variables or use AWS Secrets Manager
-# Never commit actual credentials to version control
-# export TF_VAR_db_username="your_db_user"
-# export TF_VAR_db_password="your_secure_password"
-db_username = "admin"               # Change this!
-db_password = "CHANGE_ME_INSECURE"  # Use strong password or env var!
-
-# Tags
 default_tags = {
   Terraform   = "true"
-  Project     = "BlockGuardian"
   Environment = "dev"
+  Project     = "blockguardian"
   ManagedBy   = "terraform"
-  Owner       = "devops-team"
 }

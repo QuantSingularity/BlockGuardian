@@ -1,12 +1,19 @@
 ---
-# roles/common/tasks/main.yml
-- name: Update all packages
+- name: Update all packages (RedHat)
   yum:
     name: "*"
     state: latest
     update_only: yes
+  when: ansible_os_family == "RedHat"
 
-- name: Install common packages
+- name: Update all packages (Debian)
+  apt:
+    upgrade: dist
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Install common packages (RedHat)
   yum:
     name:
       - vim
@@ -17,13 +24,33 @@
       - net-tools
       - python3
       - python3-pip
+      - curl
+      - jq
     state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install common packages (Debian)
+  apt:
+    name:
+      - vim
+      - git
+      - wget
+      - unzip
+      - htop
+      - net-tools
+      - python3
+      - python3-pip
+      - curl
+      - jq
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
 
 - name: Set timezone
   timezone:
     name: UTC
 
-- name: Configure firewall
+- name: Configure firewall (RedHat)
   firewalld:
     service: "{{ item }}"
     permanent: yes
@@ -34,9 +61,26 @@
     - ssh
   when: ansible_os_family == "RedHat"
 
-- name: Start and enable firewalld
+- name: Start and enable firewalld (RedHat)
   systemd:
     name: firewalld
     state: started
     enabled: yes
   when: ansible_os_family == "RedHat"
+
+- name: Configure ufw (Debian)
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "22"
+    - "80"
+    - "443"
+  when: ansible_os_family == "Debian"
+
+- name: Enable ufw (Debian)
+  ufw:
+    state: enabled
+    policy: deny
+  when: ansible_os_family == "Debian"

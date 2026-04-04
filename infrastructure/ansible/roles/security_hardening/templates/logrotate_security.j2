@@ -1,0 +1,20 @@
+# Logrotate Security Configuration - Financial-Grade
+# Managed by Ansible
+
+/var/log/auth.log
+/var/log/sudo.log
+/var/log/failed-logins.log
+/var/log/security-hardening.log
+/var/log/ansible-audit.log {
+    daily
+    missingok
+    rotate 90
+    compress
+    delaycompress
+    notifempty
+    create 0640 root adm
+    sharedscripts
+    postrotate
+        /usr/bin/systemctl reload rsyslog > /dev/null 2>&1 || true
+    endscript
+}

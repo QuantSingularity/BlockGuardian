@@ -7,11 +7,17 @@ variable "aws_region" {
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "app_name" {
   description = "Application name"
   type        = string
+  default     = "blockguardian"
 }
 
 variable "vpc_cidr" {
@@ -38,50 +44,6 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
 }
 
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t3.micro"
-}
-
-variable "key_name" {
-  description = "SSH key name"
-  type        = string
-  default     = null
-}
-
-variable "db_instance_class" {
-  description = "RDS instance class"
-  type        = string
-  default     = "db.t3.micro"
-}
-
-variable "db_name" {
-  description = "Database name"
-  type        = string
-}
-
-variable "db_username" {
-  description = "Database username"
-  type        = string
-  sensitive   = true
-}
-
-variable "db_password" {
-  description = "Database password"
-  type        = string
-  sensitive   = true
-}
-
-variable "default_tags" {
-  description = "Default tags for all resources"
-  type        = map(string)
-  default = {
-    Terraform   = "true"
-    Environment = "dev"
-  }
-}
-
 variable "database_subnet_cidrs" {
   description = "CIDR blocks for database subnets"
   type        = list(string)
@@ -98,4 +60,73 @@ variable "management_subnet_cidrs" {
   description = "CIDR blocks for management subnets"
   type        = list(string)
   default     = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "key_name" {
+  description = "SSH key name"
+  type        = string
+  default     = null
+}
+
+variable "instance_profile_name" {
+  description = "IAM instance profile name for EC2 instances"
+  type        = string
+  default     = ""
+}
+
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+variable "db_name" {
+  description = "Database name"
+  type        = string
+  default     = "blockguardian"
+}
+
+variable "db_username" {
+  description = "Database username"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "Database password"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_engine" {
+  description = "Database engine (mysql or postgres)"
+  type        = string
+  default     = "mysql"
+
+  validation {
+    condition     = contains(["mysql", "postgres"], var.db_engine)
+    error_message = "db_engine must be one of: mysql, postgres."
+  }
+}
+
+variable "db_family" {
+  description = "Database parameter group family (e.g. mysql8.0, postgres15)"
+  type        = string
+  default     = "mysql8.0"
+}
+
+variable "default_tags" {
+  description = "Default tags for all resources"
+  type        = map(string)
+  default = {
+    Terraform   = "true"
+    Project     = "blockguardian"
+    ManagedBy   = "terraform"
+  }
 }

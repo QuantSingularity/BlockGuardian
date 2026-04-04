@@ -1,18 +1,41 @@
 ---
-# roles/database/tasks/main.yml
-- name: Install database packages
+- name: Install database packages (RedHat)
   yum:
     name:
       - mariadb-server
       - mariadb
       - python3-PyMySQL
     state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install database packages (Debian)
+  apt:
+    name:
+      - mariadb-server
+      - python3-pymysql
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
 
 - name: Configure MariaDB
   template:
     src: my.cnf.j2
     dest: /etc/my.cnf.d/server.cnf
+    owner: root
+    group: root
+    mode: "0644"
   notify: Restart MariaDB
+  when: ansible_os_family == "RedHat"
+
+- name: Configure MariaDB (Debian path)
+  template:
+    src: my.cnf.j2
+    dest: /etc/mysql/mariadb.conf.d/99-server.cnf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart MariaDB
+  when: ansible_os_family == "Debian"
 
 - name: Start and enable MariaDB
   systemd:
@@ -21,26 +44,45 @@
     enabled: yes
 
 - name: Set root password
-  mysql_user:
+  community.mysql.mysql_user:
     name: root
     password: "{{ db_root_password }}"
     host_all: yes
     state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  no_log: true
+
+- name: Remove anonymous users
+  community.mysql.mysql_user:
+    name: ""
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ db_root_password }}"
+  no_log: true
+
+- name: Remove test database
+  community.mysql.mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ db_root_password }}"
   no_log: true
 
 - name: Create application database
-  mysql_db:
+  community.mysql.mysql_db:
     name: "{{ db_name }}"
     state: present
     login_user: root
     login_password: "{{ db_root_password }}"
+  no_log: true
 
 - name: Create application database user
-  mysql_user:
+  community.mysql.mysql_user:
     name: "{{ db_user }}"
     password: "{{ db_password }}"
-    priv: "{{ db_name }}.*:ALL"
-    host: "%"
+    priv: "{{ db_name }}.*:SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER"
+    host: "localhost"
     state: present
     login_user: root
     login_password: "{{ db_root_password }}"

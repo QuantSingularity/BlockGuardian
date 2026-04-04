@@ -4,8 +4,8 @@
 # KMS Key for encryption at rest
 resource "aws_kms_key" "main" {
   description             = "${var.app_name}-${var.environment}-encryption-key"
-  deletion_window_in_days = 7
-  enable_key_rotation     = true
+  deletion_window_in_days = var.kms_key_deletion_window
+  enable_key_rotation     = var.enable_key_rotation
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -450,7 +450,7 @@ resource "aws_secretsmanager_secret" "app_secrets" {
   name                    = "${var.app_name}/${var.environment}/app-secrets"
   description             = "Application secrets for ${var.app_name} in ${var.environment}"
   kms_key_id              = aws_kms_key.main.arn
-  recovery_window_in_days = 7
+  recovery_window_in_days = var.secrets_recovery_window
 
   tags = {
     Name        = "${var.app_name}-${var.environment}-app-secrets"
@@ -462,6 +462,7 @@ resource "aws_secretsmanager_secret" "app_secrets" {
 
 # WAF for application protection
 resource "aws_wafv2_web_acl" "main" {
+  count = var.enable_waf ? 1 : 0
   name  = "${var.app_name}-${var.environment}-waf"
   scope = "REGIONAL"
 
@@ -568,8 +569,9 @@ resource "aws_cloudwatch_log_group" "security_logs" {
 
 # VPC Flow Logs for network monitoring
 resource "aws_flow_log" "vpc_flow_log" {
+  count           = var.enable_vpc_flow_logs ? 1 : 0
   iam_role_arn    = aws_iam_role.flow_log_role.arn
-  log_destination = aws_cloudwatch_log_group.vpc_flow_logs.arn
+  log_destination = aws_cloudwatch_log_group.vpc_flow_logs[0].arn
   traffic_type    = "ALL"
   vpc_id          = var.vpc_id
 
@@ -582,6 +584,7 @@ resource "aws_flow_log" "vpc_flow_log" {
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
+  count             = var.enable_vpc_flow_logs ? 1 : 0
   name              = "/aws/${var.app_name}/${var.environment}/vpc-flow-logs"
   retention_in_days = var.log_retention_days
   kms_key_id        = aws_kms_key.main.arn
