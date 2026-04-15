@@ -67,7 +67,7 @@ export default function Login({ darkMode, toggleDarkMode }) {
         >
           {darkMode ? (
             <svg
-              className="w-4.5 h-4.5"
+              className="w-5 h-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -81,7 +81,7 @@ export default function Login({ darkMode, toggleDarkMode }) {
             </svg>
           ) : (
             <svg
-              className="w-4.5 h-4.5"
+              className="w-5 h-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -240,7 +240,7 @@ export default function Login({ darkMode, toggleDarkMode }) {
                 >
                   {showPassword ? (
                     <svg
-                      className="w-4.5 h-4.5"
+                      className="w-5 h-5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -254,7 +254,7 @@ export default function Login({ darkMode, toggleDarkMode }) {
                     </svg>
                   ) : (
                     <svg
-                      className="w-4.5 h-4.5"
+                      className="w-5 h-5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"

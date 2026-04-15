@@ -22,6 +22,7 @@ const providerOptions = {
   },
 };
 
+// Guard for SSR — Web3Modal must only be instantiated on the client
 let web3Modal;
 if (typeof window !== "undefined") {
   web3Modal = new Web3Modal({
@@ -31,6 +32,17 @@ if (typeof window !== "undefined") {
     theme: "dark",
   });
 }
+
+// Human-readable network name map
+const NETWORK_NAMES = {
+  1: "mainnet",
+  5: "goerli",
+  11155111: "sepolia",
+  137: "polygon",
+  42161: "arbitrum",
+  10: "optimism",
+  8453: "base",
+};
 
 export const WalletProvider = ({ children }) => {
   const [provider, setProvider] = useState(null);
@@ -42,15 +54,17 @@ export const WalletProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [balance, setBalance] = useState(null);
 
+  const clearError = useCallback(() => setError(null), []);
+
   const updateBalance = useCallback(
-    async (address) => {
-      if (library) {
-        try {
-          const bal = await library.getBalance(address);
-          setBalance(ethers.utils.formatEther(bal));
-        } catch (err) {
-          console.error("Error updating balance:", err);
-        }
+    async (address, lib) => {
+      const ethLib = lib || library;
+      if (!ethLib || !address) return;
+      try {
+        const bal = await ethLib.getBalance(address);
+        setBalance(ethers.utils.formatEther(bal));
+      } catch (err) {
+        console.error("Error updating balance:", err);
       }
     },
     [library],
@@ -72,7 +86,7 @@ export const WalletProvider = ({ children }) => {
         setBalance(ethers.utils.formatEther(bal));
       }
 
-      setNetwork(net.name);
+      setNetwork(NETWORK_NAMES[net.chainId] || `chain-${net.chainId}`);
       setChainId(net.chainId);
       setConnected(true);
       setError(null);
@@ -92,6 +106,7 @@ export const WalletProvider = ({ children }) => {
       setChainId(null);
       setConnected(false);
       setBalance(null);
+      setError(null);
     } catch (err) {
       setError(err);
       console.error("Disconnection error:", err);
@@ -106,9 +121,19 @@ export const WalletProvider = ({ children }) => {
           method: "wallet_switchEthereumChain",
           params: [{ chainId: ethers.utils.hexValue(targetChainId) }],
         });
-      } catch (err) {
-        setError(err);
-        console.error("Network switch error:", err);
+        setError(null);
+      } catch (switchErr) {
+        // EIP-3085: if chain not added yet, try adding it
+        if (switchErr.code === 4902) {
+          setError(
+            new Error(
+              "This network has not been added to your wallet. Please add it manually.",
+            ),
+          );
+        } else {
+          setError(switchErr);
+        }
+        console.error("Network switch error:", switchErr);
       }
     },
     [provider],
@@ -120,28 +145,20 @@ export const WalletProvider = ({ children }) => {
         setAccount(accounts[0]);
         updateBalance(accounts[0]);
       } else {
+        // Wallet locked or all accounts disconnected
         setAccount(null);
         setBalance(null);
+        setConnected(false);
       }
     },
     [updateBalance],
   );
 
   const handleChainChanged = useCallback(
-    (newChainId) => {
-      const parsedChainId = parseInt(newChainId, 16);
+    (newChainIdHex) => {
+      const parsedChainId = parseInt(newChainIdHex, 16);
       setChainId(parsedChainId);
-
-      const networkMap = {
-        1: "mainnet",
-        5: "goerli",
-        11155111: "sepolia",
-        137: "polygon",
-        42161: "arbitrum",
-        10: "optimism",
-        8453: "base",
-      };
-      setNetwork(networkMap[parsedChainId] || `chain-${parsedChainId}`);
+      setNetwork(NETWORK_NAMES[parsedChainId] || `chain-${parsedChainId}`);
 
       if (account) {
         updateBalance(account);
@@ -150,26 +167,28 @@ export const WalletProvider = ({ children }) => {
     [account, updateBalance],
   );
 
+  // Auto-reconnect if provider was cached from a previous session
   useEffect(() => {
     if (web3Modal && web3Modal.cachedProvider) {
       connectWallet();
     }
   }, [connectWallet]);
 
+  // Attach/detach wallet event listeners whenever provider changes
   useEffect(() => {
-    if (provider) {
-      provider.on("accountsChanged", handleAccountsChanged);
-      provider.on("chainChanged", handleChainChanged);
-      provider.on("disconnect", disconnectWallet);
+    if (!provider) return;
 
-      return () => {
-        if (provider.removeListener) {
-          provider.removeListener("accountsChanged", handleAccountsChanged);
-          provider.removeListener("chainChanged", handleChainChanged);
-          provider.removeListener("disconnect", disconnectWallet);
-        }
-      };
-    }
+    provider.on("accountsChanged", handleAccountsChanged);
+    provider.on("chainChanged", handleChainChanged);
+    provider.on("disconnect", disconnectWallet);
+
+    return () => {
+      if (provider.removeListener) {
+        provider.removeListener("accountsChanged", handleAccountsChanged);
+        provider.removeListener("chainChanged", handleChainChanged);
+        provider.removeListener("disconnect", disconnectWallet);
+      }
+    };
   }, [provider, disconnectWallet, handleAccountsChanged, handleChainChanged]);
 
   const getContract = useCallback(
@@ -211,6 +230,7 @@ export const WalletProvider = ({ children }) => {
         callContractMethod,
         sendTransaction,
         updateBalance,
+        clearError,
         provider,
         library,
         account,

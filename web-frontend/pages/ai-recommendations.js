@@ -154,7 +154,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* AI Model Performance */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             AI Prediction Accuracy
           </h2>
@@ -187,7 +187,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Model Comparison */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Model Performance Comparison
           </h2>
@@ -238,7 +238,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Portfolio Optimization */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Portfolio Optimization Scenarios
           </h2>
@@ -283,7 +283,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Stock Recommendations */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             AI-Generated Stock Recommendations
           </h2>
@@ -335,7 +335,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {stockRecommendations.map((stock, index) => (
                   <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
@@ -382,7 +382,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Market Trend Predictions */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Market Trend Predictions
           </h2>
@@ -427,7 +427,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
             Our AI Methodology
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+            <div className="card p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-800 rounded-full p-2 mr-3">
                   <svg
@@ -455,7 +455,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
                 prediction of market trends and price movements.
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+            <div className="card p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-800 rounded-full p-2 mr-3">
                   <svg
@@ -483,7 +483,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
                 financial markets, providing robust risk assessments.
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
+            <div className="card p-4">
               <div className="flex items-center mb-3">
                 <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-800 rounded-full p-2 mr-3">
                   <svg
@@ -515,7 +515,7 @@ export default function AIRecommendations({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Personalized Recommendations */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <div className="flex items-start mb-6">
             <div className="flex-shrink-0 bg-indigo-100 dark:bg-indigo-800 rounded-full p-3 mr-4">
               <svg

@@ -79,7 +79,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Portfolio Summary Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
               <p className="text-gray-500 dark:text-gray-400 text-sm">
@@ -137,7 +137,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Performance Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Performance History
           </h2>
@@ -191,7 +191,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
 
         {/* Asset Allocation and Sector Breakdown */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="card p-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Asset Allocation
             </h2>
@@ -224,7 +224,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="card p-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Sector Breakdown
             </h2>
@@ -255,7 +255,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
 
         {/* Risk Metrics and Top Holdings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="card p-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Risk Metrics
             </h2>
@@ -273,7 +273,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="card p-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Top Holdings
             </h2>
@@ -363,7 +363,7 @@ export default function Portfolio({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* AI Recommendations */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             AI-Powered Recommendations
           </h2>

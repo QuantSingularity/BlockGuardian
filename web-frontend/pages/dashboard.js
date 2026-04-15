@@ -137,8 +137,20 @@ const priorityBadge = {
   low: "badge-green",
 };
 
+const DEFAULT_SETTINGS = {
+  "Email Notifications": true,
+  "Two-Factor Authentication": false,
+  "AI Recommendations": true,
+  "Dark Mode": false,
+};
+
 export default function Dashboard({ darkMode, toggleDarkMode }) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+
+  const toggleSetting = (label) => {
+    setSettings((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   return (
     <Layout
@@ -608,46 +620,54 @@ export default function Dashboard({ darkMode, toggleDarkMode }) {
                 {
                   label: "Email Notifications",
                   desc: "Receive alerts for portfolio changes and recommendations",
-                  defaultOn: true,
                 },
                 {
                   label: "Two-Factor Authentication",
                   desc: "Add an extra layer of security to your account",
-                  defaultOn: false,
                 },
                 {
                   label: "AI Recommendations",
                   desc: "Get personalized AI-powered portfolio suggestions",
-                  defaultOn: true,
                 },
                 {
                   label: "Dark Mode",
                   desc: "Use dark theme across the platform",
-                  defaultOn: false,
                 },
-              ].map(({ label, desc, defaultOn }) => (
-                <div
-                  key={label}
-                  className="flex items-start justify-between gap-4 py-4 border-b border-gray-100 dark:border-gray-800 last:border-0"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {label}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {desc}
-                    </p>
-                  </div>
-                  <button
-                    className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${defaultOn ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"}`}
-                    aria-label={`Toggle ${label}`}
+              ].map(({ label, desc }) => {
+                const isOn = label === "Dark Mode" ? darkMode : settings[label];
+                const handleToggle = () => {
+                  if (label === "Dark Mode") {
+                    toggleDarkMode();
+                  } else {
+                    toggleSetting(label);
+                  }
+                };
+                return (
+                  <div
+                    key={label}
+                    className="flex items-start justify-between gap-4 py-4 border-b border-gray-100 dark:border-gray-800 last:border-0"
                   >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${defaultOn ? "translate-x-5" : "translate-x-0"}`}
-                    />
-                  </button>
-                </div>
-              ))}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {label}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        {desc}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleToggle}
+                      className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${isOn ? "bg-indigo-600" : "bg-gray-200 dark:bg-gray-700"}`}
+                      aria-label={`Toggle ${label}`}
+                      aria-pressed={isOn}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${isOn ? "translate-x-5" : "translate-x-0"}`}
+                      />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

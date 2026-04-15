@@ -29,11 +29,7 @@ module.exports = {
         glow: "0 0 30px rgba(99,102,241,0.15)",
         "glow-lg": "0 0 60px rgba(99,102,241,0.2)",
       },
-      animation: {
-        "slide-up": "slide-up 0.3s ease-out",
-        "fade-in": "fade-in 0.4s ease-out",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
-      },
+      // NOTE: animations/keyframes are defined in globals.css @theme block (Tailwind v4 style)
     },
   },
   plugins: [],

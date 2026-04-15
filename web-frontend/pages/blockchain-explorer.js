@@ -138,7 +138,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Search Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label
@@ -186,7 +186,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Blockchain Stats */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Blockchain Statistics
           </h2>
@@ -208,7 +208,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Transaction Activity Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Transaction Activity (Last 7 Days)
           </h2>
@@ -245,7 +245,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Smart Contracts */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Smart Contracts
           </h2>
@@ -291,7 +291,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {smartContracts.map((contract, index) => (
                   <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -327,7 +327,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Recent Transactions */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Recent Transactions
           </h2>
@@ -373,7 +373,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {recentTransactions.map((tx, index) => (
                   <tr key={index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
@@ -426,7 +426,7 @@ export default function BlockchainExplorer({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Blockchain Features */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6 text-center">
             Blockchain Features
           </h2>

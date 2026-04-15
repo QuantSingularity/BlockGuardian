@@ -77,11 +77,10 @@ apiClient.interceptors.response.use(
       error.message ||
       ERROR_MESSAGES.SERVER_ERROR;
 
-    return Promise.reject({
-      message: errorMessage,
-      status: error.response?.status,
-      data: error.response?.data,
-    });
+    const apiError = new Error(errorMessage);
+    apiError.status = error.response?.status;
+    apiError.data = error.response?.data;
+    return Promise.reject(apiError);
   },
 );
 

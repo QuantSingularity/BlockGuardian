@@ -119,7 +119,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Market Summary Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Market Summary
           </h2>
@@ -153,7 +153,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Market Indices Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Market Indices (Last 10 Days)
           </h2>
@@ -197,7 +197,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Sector Performance */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Sector Performance (YTD %)
           </h2>
@@ -223,7 +223,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
 
         {/* Economic Indicators and Market Sentiment */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="card p-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Economic Indicators
             </h2>
@@ -250,7 +250,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="card p-6">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Market Sentiment
             </h2>
@@ -297,7 +297,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
         </div>
 
         {/* Market News */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+        <div className="card p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Latest Market News
           </h2>
@@ -357,7 +357,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
             </div>
           </div>
           <div className="space-y-4">
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg">
+            <div className="card p-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Market Trend Analysis
               </h3>
@@ -372,7 +372,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
                 View Detailed Analysis
               </button>
             </div>
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg">
+            <div className="card p-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Volatility Forecast
               </h3>
@@ -386,7 +386,7 @@ export default function MarketAnalysis({ darkMode, toggleDarkMode }) {
                 View Volatility Models
               </button>
             </div>
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg">
+            <div className="card p-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Sector Rotation Prediction
               </h3>
