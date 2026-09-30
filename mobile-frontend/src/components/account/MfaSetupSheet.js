@@ -45,7 +45,7 @@ export default function MfaSetupSheet({ visible, onClose, onEnabled }) {
       toast.success("Two-factor authentication enabled");
       setStep("backup");
     } catch (err) {
-      setError(err.message || "Invalid code — please try again");
+      setError(err.message || "Invalid code - please try again");
     } finally {
       setIsVerifying(false);
     }

@@ -1061,13 +1061,13 @@ class ComplianceManager:
         return report_data
 
     def _generate_verification_id(self) -> str:
-        """Generate unique verification ID — format KYC-YYYYMMDDHHMMSS-XXXXXXXX (25 chars)"""
+        """Generate unique verification ID - format KYC-YYYYMMDDHHMMSS-XXXXXXXX (25 chars)"""
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         random_suffix = hashlib.md5(os.urandom(16)).hexdigest()[:6].upper()
         return f"KYC-{timestamp}-{random_suffix}"
 
     def _generate_monitoring_id(self) -> str:
-        """Generate unique monitoring ID — format AML-YYYYMMDDHHMMSS-XXXXXXXX (25 chars)"""
+        """Generate unique monitoring ID - format AML-YYYYMMDDHHMMSS-XXXXXXXX (25 chars)"""
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         random_suffix = hashlib.md5(os.urandom(16)).hexdigest()[:6].upper()
         return f"AML-{timestamp}-{random_suffix}"

@@ -49,7 +49,7 @@ export default function HomeScreen({ navigation }) {
       </Text>
       <Text style={styles.subheadline}>
         Real-time performance tracking, allocation breakdowns, and automated
-        risk monitoring — for stocks, crypto, and everything in between.
+        risk monitoring - for stocks, crypto, and everything in between.
       </Text>
 
       <View style={styles.ctaGroup}>

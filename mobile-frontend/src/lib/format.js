@@ -1,6 +1,6 @@
 export function formatCurrency(value, currency = "USD") {
   const num = Number(value);
-  if (Number.isNaN(num)) return "—";
+  if (Number.isNaN(num)) return "-";
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -14,7 +14,7 @@ export function formatCurrency(value, currency = "USD") {
 
 export function formatNumber(value, decimals = 2) {
   const num = Number(value);
-  if (Number.isNaN(num)) return "—";
+  if (Number.isNaN(num)) return "-";
   try {
     return new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 0,
@@ -27,14 +27,14 @@ export function formatNumber(value, decimals = 2) {
 
 export function formatPercent(value, decimals = 2) {
   const num = Number(value);
-  if (Number.isNaN(num)) return "—";
+  if (Number.isNaN(num)) return "-";
   return `${num >= 0 ? "+" : ""}${num.toFixed(decimals)}%`;
 }
 
 export function formatDate(value) {
-  if (!value) return "—";
+  if (!value) return "-";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   try {
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
@@ -47,9 +47,9 @@ export function formatDate(value) {
 }
 
 export function formatDateTime(value) {
-  if (!value) return "—";
+  if (!value) return "-";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   try {
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
@@ -64,7 +64,7 @@ export function formatDateTime(value) {
 }
 
 export function formatLabel(value) {
-  if (!value) return "—";
+  if (!value) return "-";
   return String(value)
     .split("_")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -76,16 +76,16 @@ export function formatTokenAmount(value, decimals = 18, displayDecimals = 2) {
   // integers (e.g. "1000000000000000000000000") to avoid precision loss on
   // values that exceed JS's safe integer range - this converts one back to
   // a human-readable token amount (e.g. "1,000,000.00").
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   const str = String(value);
-  if (!/^\d+$/.test(str)) return "—";
+  if (!/^\d+$/.test(str)) return "-";
 
   const padded = str.padStart(decimals + 1, "0");
   const whole = padded.slice(0, padded.length - decimals) || "0";
   const fraction = padded.slice(padded.length - decimals);
 
   const combined = Number(whole) + Number(`0.${fraction || "0"}`);
-  if (!Number.isFinite(combined)) return "—";
+  if (!Number.isFinite(combined)) return "-";
   try {
     return new Intl.NumberFormat("en-US", {
       minimumFractionDigits: displayDecimals,

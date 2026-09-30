@@ -3,10 +3,10 @@
 Shell scripts that automate setup, running, building, linting, testing, deploying, and
 monitoring the BlockGuardian project across its four components:
 
-- **Backend** — Flask API at `code/backend`
-- **Blockchain** — Hardhat/Solidity contracts at `code/blockchain`
-- **Web Frontend** — Next.js app at `web-frontend`
-- **Mobile Frontend** — Expo/React Native app at `mobile-frontend`
+- **Backend** - Flask API at `code/backend`
+- **Blockchain** - Hardhat/Solidity contracts at `code/blockchain`
+- **Web Frontend** - Next.js app at `web-frontend`
+- **Mobile Frontend** - Expo/React Native app at `mobile-frontend`
 
 All scripts resolve the project root from their own location (not the caller's current
 directory), so they can be run from anywhere, e.g. `./scripts/health_check.sh` or
@@ -136,15 +136,15 @@ target environment.
 
 Options:
 
-- `-e, --environment` _(required)_ — `development`, `staging`, or `production`
-- `-c, --component` — `all` (default), `backend`, `web-frontend`, `mobile-frontend`, or `blockchain`
-- `-s, --skip-tests` — skip the test step before building/deploying
-- `-h, --help` — show usage
+- `-e, --environment` _(required)_ - `development`, `staging`, or `production`
+- `-c, --component` - `all` (default), `backend`, `web-frontend`, `mobile-frontend`, or `blockchain`
+- `-s, --skip-tests` - skip the test step before building/deploying
+- `-h, --help` - show usage
 
 Results are saved in `deployment-logs/` (per-component logs plus
 `deployment_summary_*.md`). The actual deploy step for each component is a logged
 placeholder (e.g. where an `aws s3 sync` or `docker push` would go) rather than a
-real push to infrastructure — wire in real deployment commands for your environment
+real push to infrastructure - wire in real deployment commands for your environment
 before using this in production.
 
 ## Notes
