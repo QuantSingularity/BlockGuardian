@@ -238,7 +238,7 @@ jobs:
           retention-days: 7
 
   # ============================================================
-  # Job 5 -- Mobile Frontend (Expo) Build & Test
+  # Job 5 -- Mobile Frontend (Expo) Test & Build
   # ============================================================
   mobile_frontend:
     name: Mobile-Frontend Test & Build
