@@ -51,7 +51,6 @@ export default function TradeModal({
       if (preset) setPrice(String(preset.current_price ?? ""));
     } else {
       setSelected(null);
-      loadPopularAssets();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, mode, presetSymbol]);

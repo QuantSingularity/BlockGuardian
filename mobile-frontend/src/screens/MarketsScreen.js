@@ -18,6 +18,13 @@ import { assetAPI } from "../lib/api";
 import { formatCurrency, formatPercent, formatLabel } from "../lib/format";
 import { ASSET_TYPES } from "../lib/constants";
 
+const changeColor = (value) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "#64748b";
+  }
+  return Number(value) >= 0 ? "#34d399" : "#f87171";
+};
+
 function MarketsContent() {
   const toast = useToast();
   const [query, setQuery] = useState("");
@@ -25,48 +32,49 @@ function MarketsContent() {
   const [assets, setAssets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadDefault = async (type) => {
-    setIsLoading(true);
-    try {
-      const results = await assetAPI.list({
-        limit: 60,
-        ...(type ? { asset_type: type } : {}),
-      });
-      setAssets(results || []);
-    } catch (err) {
-      toast.error(err.message || "Failed to load market data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadDefault(assetType);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetType]);
-
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      if (query.trim().length === 0) loadDefault(assetType);
-      return;
-    }
+    const trimmed = query.trim();
+    if (trimmed.length === 1) return undefined;
+    let cancelled = false;
     setIsLoading(true);
-    const handle = setTimeout(async () => {
+
+    const run = async (request, fallbackMessage) => {
       try {
-        const results = await assetAPI.search(
-          query.trim(),
-          assetType ? { type: assetType } : {},
-        );
-        setAssets(results || []);
+        const results = await request();
+        if (!cancelled) setAssets(results || []);
       } catch (err) {
-        toast.error(err.message || "Search failed");
+        if (!cancelled) toast.error(err.message || fallbackMessage);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
+    };
+
+    if (trimmed.length === 0) {
+      run(
+        () =>
+          assetAPI.list({
+            limit: 60,
+            ...(assetType ? { asset_type: assetType } : {}),
+          }),
+        "Failed to load market data",
+      );
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const handle = setTimeout(() => {
+      run(
+        () => assetAPI.search(trimmed, assetType ? { type: assetType } : {}),
+        "Search failed",
+      );
     }, 350);
-    return () => clearTimeout(handle);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
+  }, [query, assetType]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
@@ -155,10 +163,7 @@ function MarketsContent() {
                   style={[
                     styles.assetChange,
                     {
-                      color:
-                        (item.day_change_percent || 0) >= 0
-                          ? "#34d399"
-                          : "#f87171",
+                      color: changeColor(item.day_change_percent),
                     },
                   ]}
                 >

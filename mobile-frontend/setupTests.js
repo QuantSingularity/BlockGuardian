@@ -16,6 +16,10 @@ jest.mock("@react-native-community/netinfo", () => ({
   addEventListener: jest.fn(() => jest.fn()),
 }));
 
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: (props) => require("react").createElement("Icon", props),
+}));
+
 jest.mock("react-native-safe-area-context", () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
   SafeAreaProvider: ({ children }) => children,

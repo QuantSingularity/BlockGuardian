@@ -151,16 +151,18 @@ export default function PortfolioSettingsSheet({
   );
 }
 
+function ratioToPercent(ratio, fallback) {
+  return String(Math.round((ratio ?? fallback) * 10000) / 100);
+}
+
 function buildForm(portfolio) {
   return {
     name: portfolio?.name || "",
     description: portfolio?.description || "",
     riskLevel: portfolio?.risk_level || "moderate",
-    maxPositionSize: String((portfolio?.max_position_size ?? 0.1) * 100),
-    maxSectorAllocation: String(
-      (portfolio?.max_sector_allocation ?? 0.3) * 100,
-    ),
-    stopLossThreshold: String((portfolio?.stop_loss_threshold ?? 0.05) * 100),
+    maxPositionSize: ratioToPercent(portfolio?.max_position_size, 0.1),
+    maxSectorAllocation: ratioToPercent(portfolio?.max_sector_allocation, 0.3),
+    stopLossThreshold: ratioToPercent(portfolio?.stop_loss_threshold, 0.05),
   };
 }
 

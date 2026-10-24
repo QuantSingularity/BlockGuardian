@@ -10,6 +10,9 @@ import { portfolioAPI } from "../../services/api";
 import { RISK_LEVELS, ROUTES } from "../../utils/constants";
 import { validateRequired } from "../../lib/validators";
 
+const ratioToPercent = (ratio, fallback) =>
+  String(Math.round((ratio ?? fallback) * 10000) / 100);
+
 export default function PortfolioSettingsForm({ portfolio, onUpdated }) {
   const toast = useToast();
   const router = useRouter();
@@ -18,9 +21,9 @@ export default function PortfolioSettingsForm({ portfolio, onUpdated }) {
     description: portfolio.description || "",
     investmentObjective: portfolio.investment_objective || "",
     riskLevel: portfolio.risk_level || "moderate",
-    maxPositionSize: String((portfolio.max_position_size ?? 0.1) * 100),
-    maxSectorAllocation: String((portfolio.max_sector_allocation ?? 0.3) * 100),
-    stopLossThreshold: String((portfolio.stop_loss_threshold ?? 0.05) * 100),
+    maxPositionSize: ratioToPercent(portfolio.max_position_size, 0.1),
+    maxSectorAllocation: ratioToPercent(portfolio.max_sector_allocation, 0.3),
+    stopLossThreshold: ratioToPercent(portfolio.stop_loss_threshold, 0.05),
   });
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);

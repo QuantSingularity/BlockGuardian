@@ -10,6 +10,15 @@ import { assetAPI } from "../services/api";
 import { formatCurrency, formatPercent, formatLabel } from "../lib/format";
 import { ASSET_TYPES } from "../utils/constants";
 
+const changeClass = (value) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "text-gray-400 dark:text-gray-500";
+  }
+  return Number(value) >= 0
+    ? "text-emerald-600 dark:text-emerald-400"
+    : "text-red-600 dark:text-red-400";
+};
+
 export default function MarketsPage() {
   const toast = useToast();
   const [query, setQuery] = useState("");
@@ -17,47 +26,52 @@ export default function MarketsPage() {
   const [assets, setAssets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadDefault = async () => {
-    setIsLoading(true);
-    try {
-      const results = await assetAPI.list({
-        limit: 60,
-        ...(assetType ? { asset_type: assetType } : {}),
-      });
-      setAssets(results || []);
-    } catch (err) {
-      toast.error(err.message || "Failed to load market data");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadDefault();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetType]);
-
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      if (query.trim().length === 0) loadDefault();
-      return;
-    }
+    const trimmed = query.trim();
+    if (trimmed.length === 1) return undefined;
+    let cancelled = false;
     setIsLoading(true);
-    const handle = setTimeout(async () => {
+
+    const run = async (request, fallbackMessage) => {
       try {
-        const results = await assetAPI.search(query.trim(), {
-          ...(assetType ? { type: assetType } : {}),
-        });
-        setAssets(results || []);
+        const results = await request();
+        if (!cancelled) setAssets(results || []);
       } catch (err) {
-        toast.error(err.message || "Search failed");
+        if (!cancelled) toast.error(err.message || fallbackMessage);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
+    };
+
+    if (trimmed.length === 0) {
+      run(
+        () =>
+          assetAPI.list({
+            limit: 60,
+            ...(assetType ? { asset_type: assetType } : {}),
+          }),
+        "Failed to load market data",
+      );
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const handle = setTimeout(() => {
+      run(
+        () =>
+          assetAPI.search(trimmed, {
+            ...(assetType ? { type: assetType } : {}),
+          }),
+        "Search failed",
+      );
     }, 350);
-    return () => clearTimeout(handle);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
+  }, [query, assetType]);
 
   return (
     <DashboardLayout title="Markets">
@@ -142,7 +156,7 @@ export default function MarketsPage() {
                         {formatCurrency(asset.current_price, asset.currency)}
                       </td>
                       <td
-                        className={`table-cell text-right font-medium ${(asset.day_change_percent || 0) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
+                        className={`table-cell text-right font-medium ${changeClass(asset.day_change_percent)}`}
                       >
                         {formatPercent(asset.day_change_percent)}
                       </td>
